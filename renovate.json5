@@ -1,0 +1,16 @@
+{
+  extends: [
+    ":semanticCommits",
+    "config:recommended",
+    'helpers:pinGitHubActionDigests'
+  ],
+  dependencyDashboard: true,
+  packageRules: [
+    {
+      description: "Group Terraform GitHub provider updates together",
+      matchDatasources: ["terraform-provider"],
+      matchPackageNames: ["integrations/github"],
+      groupName: "integrations/github",
+    }
+  ],
+}

@@ -1,0 +1,25 @@
+# Local .terraform directories and provider plugin cache
+**/.terraform/*
+.terraform.d/
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+
+# Ignore override files as they are usually used to override resources locally and so
+# are not checked in
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore lock files in examples and modules (providers resolved fresh in CI /
+# by the test harness)
+examples/**/.terraform.lock.hcl
+modules/**/.terraform.lock.hcl
+
+# IntelliJ
+.idea
