@@ -1,0 +1,40 @@
+name: pre-commit
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: install pre-commit
+        run: pip install pre-commit
+
+      - name: Terraform
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4
+        with:
+          terraform_version: "1.5.7"
+
+      - name: install hcledit
+        run: |
+          curl -sSLo ./hcledit.tar.gz https://github.com/minamijoyo/hcledit/releases/download/v0.2.10/hcledit_0.2.10_linux_amd64.tar.gz
+          tar -xzf hcledit.tar.gz
+          chmod +x hcledit
+          mv hcledit /usr/local/bin/hcledit
+
+      - name: install tf-lint
+        run: curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+
+      - name: install tf-docs
+        run: |
+          curl -sSLo ./terraform-docs.tar.gz https://terraform-docs.io/dl/v0.17.0/terraform-docs-v0.17.0-linux-amd64.tar.gz
+          tar -xzf terraform-docs.tar.gz
+          chmod +x terraform-docs
+          mv terraform-docs /usr/local/bin/terraform-docs
+
+      - name: pre-commit
+        run: pre-commit run --all-files --show-diff-on-failure
