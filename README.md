@@ -46,7 +46,7 @@ organization and Actions axes:
   (who is an owner, the all-members team, ruleset tuning) is an input, not a baked-in
   constant.
 
-See [`docs/PLAN.md`](docs/PLAN.md) for the design rationale, a comparison with the
+See [`docs/DESIGN.md`](docs/DESIGN.md) for the design rationale, a comparison with the
 existing ecosystem modules, and the feature roadmap.
 
 ## Architecture
