@@ -258,3 +258,17 @@ run "rejects_ruleset_bypass_unknown_team" {
   }
   expect_failures = [var.repositories]
 }
+
+run "rejects_invalid_ruleset_enforcement" {
+  command = plan
+  variables {
+    repositories = [{
+      name        = "app"
+      description = ""
+      rulesets = {
+        r = { enforcement = "sometimes", rules = {} }
+      }
+    }]
+  }
+  expect_failures = [var.repositories]
+}

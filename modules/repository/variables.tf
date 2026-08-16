@@ -149,6 +149,62 @@ variable "repositories" {
     ]))
     error_message = "Ruleset bypass_actors reference a team not present in var.teams."
   }
+
+  validation {
+    condition = alltrue(flatten([
+      for r in var.repositories : [
+        for rs in values(r.rulesets) :
+        contains(["active", "evaluate", "disabled"], rs.enforcement)
+      ]
+    ]))
+    error_message = "Ruleset enforcement must be one of: active, evaluate, disabled."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for r in var.repositories : [
+        for rs in values(r.rulesets) :
+        contains(["branch", "tag"], rs.target)
+      ]
+    ]))
+    error_message = "Ruleset target must be one of: branch, tag."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for r in var.repositories : [
+        for rs in values(r.rulesets) : [
+          for b in rs.bypass_actors :
+          contains(["OrganizationAdmin", "RepositoryRole", "Team", "Integration", "DeployKey"], b.actor_type)
+        ]
+      ]
+    ]))
+    error_message = "Ruleset bypass_actors.actor_type must be one of: OrganizationAdmin, RepositoryRole, Team, Integration, DeployKey."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for r in var.repositories : [
+        for rs in values(r.rulesets) : [
+          for b in rs.bypass_actors :
+          contains(["always", "pull_request"], b.bypass_mode)
+        ]
+      ]
+    ]))
+    error_message = "Ruleset bypass_actors.bypass_mode must be one of: always, pull_request."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for r in var.repositories : [
+        for rs in values(r.rulesets) : [
+          for b in rs.bypass_actors :
+          b.actor_type != "Team" || b.team != null || b.actor_id != 0
+        ]
+      ]
+    ]))
+    error_message = "Ruleset bypass_actors with actor_type = \"Team\" must set either team (a team name) or a non-default actor_id (a raw team id) — not neither."
+  }
 }
 
 variable "teams" {

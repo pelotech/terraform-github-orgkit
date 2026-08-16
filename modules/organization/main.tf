@@ -26,7 +26,7 @@ locals {
     creation            = false, update = false, deletion = false, non_fast_forward = false,
     required_signatures = false, required_linear_history = false, pull_request = null
   }
-  _admin_bypass = [{ actor_type = "OrganizationAdmin", actor_id = 0, bypass_mode = "always" }]
+  _admin_bypass = [{ actor_type = "OrganizationAdmin", actor_id = 0, bypass_mode = "always" }] # actor_id is coerced to 1 for OrganizationAdmin in the resource
 
   presets = {
     require_pull_request_reviews = {
