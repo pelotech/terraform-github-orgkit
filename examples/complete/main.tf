@@ -78,12 +78,13 @@ module "orgkit" {
       admins      = ["platform", "owners"]
     },
     {
-      name           = "sandbox"
-      description    = "Experiments; relaxed rules"
-      visibility     = "private"
-      admins         = ["owners"]
-      unsafe_merges  = true  # allow rebase/squash merges
-      signed_commits = false # opt out of the required-signed-commits ruleset
+      name               = "sandbox"
+      description        = "Experiments; relaxed rules"
+      visibility         = "private"
+      admins             = ["owners"]
+      allow_squash_merge = true  # allow squash merges
+      allow_rebase_merge = true  # allow rebase merges
+      signed_commits     = false # opt out of the required-signed-commits ruleset
     },
     {
       name         = "docs-site"

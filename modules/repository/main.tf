@@ -15,17 +15,36 @@ resource "github_repository" "internal" {
   description = each.value.description
   visibility  = each.value.visibility
 
+  topics             = each.value.topics
+  homepage_url       = each.value.homepage_url
+  has_issues         = each.value.has_issues
+  has_wiki           = each.value.has_wiki
+  has_projects       = each.value.has_projects
+  has_downloads      = each.value.has_downloads
+  is_template        = each.value.is_template
+  gitignore_template = each.value.gitignore_template
+  license_template   = each.value.license_template
+  archived           = each.value.archived
+  archive_on_destroy = each.value.archive_on_destroy
+
   auto_init              = false
-  has_issues             = true
-  has_projects           = false
-  has_wiki               = false
-  allow_auto_merge       = true
-  allow_merge_commit     = true
-  allow_rebase_merge     = each.value.unsafe_merges
-  allow_squash_merge     = each.value.unsafe_merges
-  delete_branch_on_merge = true
-  merge_commit_message   = "PR_BODY"
-  merge_commit_title     = "PR_TITLE"
+  allow_auto_merge       = each.value.allow_auto_merge
+  allow_merge_commit     = each.value.allow_merge_commit
+  allow_rebase_merge     = each.value.allow_rebase_merge
+  allow_squash_merge     = each.value.allow_squash_merge
+  delete_branch_on_merge = each.value.delete_branch_on_merge
+  merge_commit_message   = each.value.merge_commit_message
+  merge_commit_title     = each.value.merge_commit_title
+
+  dynamic "template" {
+    for_each = each.value.template != null ? [each.value.template] : []
+
+    content {
+      owner                = template.value.owner
+      repository           = template.value.repository
+      include_all_branches = template.value.include_all_branches
+    }
+  }
 
   dynamic "pages" {
     for_each = each.value.enable_pages ? [1] : []
@@ -59,6 +78,21 @@ resource "github_repository_vulnerability_alerts" "internal" {
 
   repository = each.value.name
   enabled    = true
+}
+
+#
+# Default branch, managed as a dedicated resource because setting it on the
+# repository is deprecated. Only created for repositories that name one.
+#
+
+resource "github_branch_default" "internal" {
+  for_each = {
+    for name, r in local.repositories : name => r.default_branch
+    if r.default_branch != null
+  }
+
+  repository = github_repository.internal[each.key].name
+  branch     = each.value
 }
 
 #

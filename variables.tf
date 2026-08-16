@@ -55,17 +55,44 @@ variable "teams" {
 variable "repositories" {
   description = "Repositories and which teams may access them. See the repository submodule for the full object schema and validations."
   type = list(object({
-    name           = string
-    description    = string
-    visibility     = optional(string, "private")
-    readers        = optional(list(string), [])
-    writers        = optional(list(string), [])
-    admins         = optional(list(string), [])
-    restricted     = optional(bool, false)
-    enable_pages   = optional(bool, false)
-    unsafe_merges  = optional(bool, false)
-    signed_commits = optional(bool, true)
-    variables      = optional(map(string), {})
+    name        = string
+    description = string
+    visibility  = optional(string, "private")
+    readers     = optional(list(string), [])
+    writers     = optional(list(string), [])
+    admins      = optional(list(string), [])
+    restricted  = optional(bool, false)
+
+    topics             = optional(list(string), [])
+    homepage_url       = optional(string, null)
+    has_issues         = optional(bool, true)
+    has_wiki           = optional(bool, false)
+    has_projects       = optional(bool, false)
+    has_downloads      = optional(bool, true)
+    is_template        = optional(bool, false)
+    gitignore_template = optional(string, null)
+    license_template   = optional(string, null)
+    archived           = optional(bool, false)
+    archive_on_destroy = optional(bool, false)
+    default_branch     = optional(string, null)
+    enable_pages       = optional(bool, false)
+    signed_commits     = optional(bool, true)
+
+    allow_merge_commit     = optional(bool, true)
+    allow_squash_merge     = optional(bool, false)
+    allow_rebase_merge     = optional(bool, false)
+    allow_auto_merge       = optional(bool, true)
+    delete_branch_on_merge = optional(bool, true)
+    merge_commit_message   = optional(string, "PR_BODY")
+    merge_commit_title     = optional(string, "PR_TITLE")
+
+    template = optional(object({
+      owner                = string
+      repository           = string
+      include_all_branches = optional(bool, false)
+    }))
+
+    variables = optional(map(string), {})
     environments = optional(map(object({
       variables  = optional(map(string), {})
       reviewers  = optional(list(string), [])

@@ -133,3 +133,89 @@ run "rejects_env_secret_for_undeclared_environment" {
 
   expect_failures = [github_actions_environment_secret.internal]
 }
+
+run "defaults_preserve_current_behavior" {
+  command = plan
+
+  variables {
+    repositories = [{ name = "app", description = "" }]
+  }
+
+  assert {
+    condition = alltrue([
+      github_repository.internal["app"].has_issues,
+      github_repository.internal["app"].allow_merge_commit,
+      github_repository.internal["app"].allow_auto_merge,
+      github_repository.internal["app"].delete_branch_on_merge,
+      !github_repository.internal["app"].has_wiki,
+      !github_repository.internal["app"].allow_squash_merge,
+      !github_repository.internal["app"].allow_rebase_merge,
+      github_repository.internal["app"].merge_commit_message == "PR_BODY",
+    ])
+    error_message = "Repository defaults must reproduce the previous hardcoded behavior."
+  }
+}
+
+run "exposes_repository_settings" {
+  command = plan
+
+  variables {
+    repositories = [{
+      name         = "app"
+      description  = ""
+      topics       = ["platform", "go"]
+      homepage_url = "https://example.com"
+      has_wiki     = true
+      is_template  = true
+      archived     = true
+    }]
+  }
+
+  assert {
+    condition = alltrue([
+      contains(github_repository.internal["app"].topics, "platform"),
+      github_repository.internal["app"].homepage_url == "https://example.com",
+      github_repository.internal["app"].has_wiki,
+      github_repository.internal["app"].is_template,
+      github_repository.internal["app"].archived,
+    ])
+    error_message = "Exposed repository settings must pass through to the repository resource."
+  }
+}
+
+run "default_branch_creates_branch_default_only_when_set" {
+  command = plan
+
+  variables {
+    repositories = [
+      { name = "app", description = "", default_branch = "develop" },
+      { name = "other", description = "" },
+    ]
+  }
+
+  assert {
+    condition     = github_branch_default.internal["app"].branch == "develop"
+    error_message = "A repository with default_branch set must get a github_branch_default resource."
+  }
+
+  assert {
+    condition     = !contains(keys(github_branch_default.internal), "other")
+    error_message = "Repositories without default_branch must not get a github_branch_default resource."
+  }
+}
+
+run "rejects_disabling_all_merge_methods" {
+  command = plan
+
+  variables {
+    repositories = [{
+      name               = "app"
+      description        = ""
+      allow_merge_commit = false
+      allow_squash_merge = false
+      allow_rebase_merge = false
+    }]
+  }
+
+  expect_failures = [var.repositories]
+}

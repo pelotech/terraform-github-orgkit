@@ -35,6 +35,10 @@ terraform validate
 | ---- | ---- |
 | [github_team.developers](https://registry.terraform.io/providers/integrations/github/latest/docs/data-sources/team) | data source |
 
+## Inputs
+
+No inputs.
+
 ## Outputs
 
 | Name | Description |

@@ -100,3 +100,12 @@ repository module (which would create a dependency cycle).
 **Out of scope**: classic org/repo Projects (legacy; Projects V2 is not cleanly
 manageable in the provider) and the deprecated `branch_protection_v3` resource
 (rulesets supersede it).
+
+## Planned default changes
+
+Defaults intended to change in a future major release. They preserve today's
+behavior for now, so existing configs see no plan churn until then:
+
+- **Merge strategy** — switch the default from merge commits to squash-only
+  (`allow_squash_merge = true`, `allow_merge_commit = false`). The module currently
+  defaults to merge commits.
