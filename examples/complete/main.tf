@@ -50,6 +50,13 @@ module "orgkit" {
       writers     = ["developers"]
       admins      = ["owners"]
       variables   = { NODE_ENV = "production" }
+      rulesets = {
+        "Protect main" = {
+          include_refs  = ["~DEFAULT_BRANCH"]
+          bypass_actors = [{ actor_type = "Team", team = "owners" }]
+          rules         = { required_linear_history = true }
+        }
+      }
       environments = {
         # protected_branches style: only protected branches may deploy.
         production = {
@@ -122,8 +129,15 @@ module "orgkit" {
     }
   }
 
-  # The baseline ruleset is tunable; here we require two approvals.
-  baseline_ruleset = {
-    required_approving_review_count = 2
+  # Enable a curated subset of built-in ruleset presets.
+  enabled_presets = ["require_pull_request_reviews", "restrict_deletions", "require_signed_commits", "block_force_pushes"]
+
+  # A custom org ruleset alongside the presets.
+  organization_rulesets = {
+    "No Tag Deletes" = {
+      target        = "tag"
+      bypass_actors = [{ actor_type = "OrganizationAdmin" }]
+      rules         = { deletion = true }
+    }
   }
 }

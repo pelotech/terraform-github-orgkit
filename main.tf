@@ -24,8 +24,8 @@ module "organization" {
 
   members                              = local.usernames
   owners                               = local.owners
-  baseline_ruleset                     = var.baseline_ruleset
-  require_signed_commits               = var.require_signed_commits
+  organization_rulesets                = var.organization_rulesets
+  enabled_presets                      = var.enabled_presets
   signed_commits_excluded_repositories = local.signed_commits_excluded
 }
 
