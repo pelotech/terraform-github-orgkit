@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.0](https://github.com/pelotech/terraform-github-orgkit/compare/v0.2.0...v0.3.0) (2026-08-16)
+
+
+### Features
+
+* default archive_on_destroy to true and has_downloads to false ([#14](https://github.com/pelotech/terraform-github-orgkit/issues/14)) ([529fa30](https://github.com/pelotech/terraform-github-orgkit/commit/529fa30e4e17763bc2c4730c04bed1aadbe21803))
+
+
+### Chores
+
+* repo hygiene (editorconfig, code of conduct, docs refresh, tf pin) ([#12](https://github.com/pelotech/terraform-github-orgkit/issues/12)) ([4d9445c](https://github.com/pelotech/terraform-github-orgkit/commit/4d9445c02141300125abb8a9c8d29cd8cf2cfcac))
+
+
+### Docs
+
+* add community-health files and README badges ([#11](https://github.com/pelotech/terraform-github-orgkit/issues/11)) ([52153b0](https://github.com/pelotech/terraform-github-orgkit/commit/52153b00c02397950f860bb2ebbb0e6da975cb85))
+
 ## [0.2.0](https://github.com/pelotech/terraform-github-orgkit/compare/v0.1.0...v0.2.0) (2026-08-16)
 
 
