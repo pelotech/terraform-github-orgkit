@@ -22,11 +22,23 @@ scope; see the provider docs.
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9 |
 | <a name="requirement_github"></a> [github](#requirement\_github) | ~> 6.0 |
 
+## Providers
+
+No providers.
+
 ## Modules
 
 | Name | Source | Version |
 | ---- | ------ | ------- |
 | <a name="module_orgkit"></a> [orgkit](#module\_orgkit) | ../../ | n/a |
+
+## Resources
+
+No resources.
+
+## Inputs
+
+No inputs.
 
 ## Outputs
 
