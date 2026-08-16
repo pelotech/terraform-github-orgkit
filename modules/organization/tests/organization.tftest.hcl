@@ -1,14 +1,9 @@
-mock_provider "github" {
-  mock_data "github_organization_roles" {
-    defaults = { roles = [{ name = "Reader", role_id = 1, source = "Predefined" }] }
-  }
-}
+mock_provider "github" {}
 
 run "generic_ruleset_passes_through" {
   command = plan
 
   variables {
-    create_all_members_team = false
     organization_rulesets = {
       "No Force Push" = {
         include_refs  = ["~DEFAULT_BRANCH"]
@@ -31,7 +26,6 @@ run "generic_ruleset_passes_through" {
 run "rejects_bad_enforcement" {
   command = plan
   variables {
-    create_all_members_team = false
     organization_rulesets = {
       bad = { enforcement = "sometimes", rules = {} }
     }
