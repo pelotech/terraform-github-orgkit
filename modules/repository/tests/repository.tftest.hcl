@@ -219,3 +219,56 @@ run "rejects_disabling_all_merge_methods" {
 
   expect_failures = [var.repositories]
 }
+
+run "per_repo_ruleset_with_team_bypass" {
+  command = plan
+  variables {
+    repositories = [{
+      name        = "app"
+      description = ""
+      rulesets = {
+        "Protect main" = {
+          include_refs  = ["~DEFAULT_BRANCH"]
+          bypass_actors = [{ actor_type = "Team", team = "platform" }]
+          rules         = { non_fast_forward = true, pull_request = { required_approving_review_count = 2 } }
+        }
+      }
+    }]
+  }
+  assert {
+    condition     = github_repository_ruleset.internal["app:Protect main"].rules[0].pull_request[0].required_approving_review_count == 2
+    error_message = "Per-repo ruleset rules must pass through."
+  }
+  assert {
+    condition     = one(github_repository_ruleset.internal["app:Protect main"].bypass_actors).actor_id == 1
+    error_message = "Team bypass 'platform' must resolve to team id 1."
+  }
+}
+
+run "rejects_ruleset_bypass_unknown_team" {
+  command = plan
+  variables {
+    repositories = [{
+      name        = "app"
+      description = ""
+      rulesets = {
+        r = { bypass_actors = [{ actor_type = "Team", team = "ghost" }], rules = {} }
+      }
+    }]
+  }
+  expect_failures = [var.repositories]
+}
+
+run "rejects_invalid_ruleset_enforcement" {
+  command = plan
+  variables {
+    repositories = [{
+      name        = "app"
+      description = ""
+      rulesets = {
+        r = { enforcement = "sometimes", rules = {} }
+      }
+    }]
+  }
+  expect_failures = [var.repositories]
+}

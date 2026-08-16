@@ -96,6 +96,70 @@ resource "github_branch_default" "internal" {
 }
 
 #
+# Per-repository rulesets, with team-name bypass resolution via var.teams.
+#
+
+locals {
+  # "<repo>:<ruleset>" => { repository, name, config }
+  repository_rulesets = merge([
+    for r in var.repositories : {
+      for name, cfg in r.rulesets :
+      "${r.name}:${name}" => { repository = r.name, name = name, config = cfg }
+    }
+  ]...)
+}
+
+resource "github_repository_ruleset" "internal" {
+  for_each = local.repository_rulesets
+
+  name        = each.value.name
+  repository  = github_repository.internal[each.value.repository].name
+  enforcement = each.value.config.enforcement
+  target      = each.value.config.target
+
+  conditions {
+    ref_name {
+      include = each.value.config.include_refs
+      exclude = each.value.config.exclude_refs
+    }
+  }
+
+  dynamic "bypass_actors" {
+    for_each = each.value.config.bypass_actors
+    content {
+      actor_id = (
+        bypass_actors.value.actor_type == "OrganizationAdmin" ? 1 :
+        bypass_actors.value.actor_type == "Team" && bypass_actors.value.team != null ?
+        tonumber(var.teams[bypass_actors.value.team].id) :
+        bypass_actors.value.actor_id
+      )
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
+  }
+
+  rules {
+    creation                = each.value.config.rules.creation
+    update                  = each.value.config.rules.update
+    deletion                = each.value.config.rules.deletion
+    non_fast_forward        = each.value.config.rules.non_fast_forward
+    required_signatures     = each.value.config.rules.required_signatures
+    required_linear_history = each.value.config.rules.required_linear_history
+
+    dynamic "pull_request" {
+      for_each = each.value.config.rules.pull_request != null ? [each.value.config.rules.pull_request] : []
+      content {
+        required_approving_review_count   = pull_request.value.required_approving_review_count
+        require_code_owner_review         = pull_request.value.require_code_owner_review
+        require_last_push_approval        = pull_request.value.require_last_push_approval
+        dismiss_stale_reviews_on_push     = pull_request.value.dismiss_stale_reviews_on_push
+        required_review_thread_resolution = pull_request.value.required_review_thread_resolution
+      }
+    }
+  }
+}
+
+#
 # One team-repository grant per repository-team pair. A team listed at more than
 # one level gets the highest permission (merge order: admins > writers > readers).
 #

@@ -29,7 +29,7 @@ maintained suite that additionally covers ground none of them do:
 | Actions variables (repo + org) | ✅ |
 | Actions secrets (repo + org + environment) | ✅ |
 | Environments (reviewers, wait timers, branch policies) | ✅ |
-| Organization rulesets (baseline + signed commits) | ✅ |
+| Organization + per-repo rulesets (generic, preset-driven) | ✅ |
 | Organization roles assigned to teams | ✅ |
 
 ## Architecture
@@ -41,15 +41,17 @@ modules/organization  →  modules/teams  →  modules/repository
 ```
 
 - **`organization`** — org membership (owners mapped to `admin`, everyone else
-  `member`) and org rulesets (baseline branch protection + signed commits). Outputs
-  the membership map.
+  `member`) and generic organization rulesets: a `organization_rulesets` map
+  merged with curated, opt-in `enabled_presets` (PR reviews, deletion/force-push
+  protection, signed commits, linear history). Outputs the membership map.
 - **`teams`** — teams, team memberships, the optional all-members team, and org-role
   assignments (resolved by name against the org's predefined roles). Consumes the
   membership map + owner set; outputs a `name → {id, slug}` team map and the
   all-members team id.
 - **`repository`** — repositories, team↔repo grants, the default all-members read
-  grant, repository/environment Actions variables & secrets, and environments.
-  Consumes the team map; outputs a repository-id map.
+  grant, per-repo `rulesets` (same generic shape as the org rulesets, plus a
+  team-name bypass convenience), repository/environment Actions variables &
+  secrets, and environments. Consumes the team map; outputs a repository-id map.
 
 The **root** additionally manages organization-level Actions secrets and variables.
 These need both decrypted secret values and repository ids to resolve `selected`
@@ -64,7 +66,9 @@ repository module (which would create a dependency cycle).
      convenience that derives owners from a named team. No owners team is assumed.
    - The **all-members team** is controlled by `create_all_members_team` /
      `all_members_team_name`.
-   - The **baseline ruleset** is a tunable object (and can be disabled).
+   - **Rulesets** are a generic `organization_rulesets` / per-repo `rulesets` map
+     input; curated presets are opt-in via `enabled_presets` rather than hardcoded
+     defaults baked into a single "baseline" object.
    - **Org roles** validate at plan time against the roles GitHub actually exposes,
      not a static allowlist.
 2. **Secrets are never decrypted here.** The caller passes already-decrypted values
@@ -76,7 +80,9 @@ repository module (which would create a dependency cycle).
 **Tier 1 — per-repo depth (`modules/repository`)**
 
 - Issue labels (`github_issue_label`), optional merge-with-github-defaults
-- Per-repo `github_repository_ruleset` (composes with the org baseline ruleset)
+- ~~Per-repo `github_repository_ruleset`~~ — done: `repositories[].rulesets` is a
+  generic map (same `rules`/`bypass_actors` shape as `organization_rulesets`,
+  plus a `team` bypass convenience), composing alongside org-level presets.
 - Expose currently-fixed repo settings: `topics`, `homepage_url`, merge-strategy
   toggles, `has_wiki`/`has_downloads`, `is_template`, template source,
   `gitignore`/`license_template`, `archived`/`archive_on_destroy`, `default_branch`
