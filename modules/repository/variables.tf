@@ -24,7 +24,7 @@ variable "repositories" {
     gitignore_template = optional(string, null)
     license_template   = optional(string, null)
     archived           = optional(bool, false)
-    archive_on_destroy = optional(bool, false)
+    archive_on_destroy = optional(bool, true)
     default_branch     = optional(string, null)
     enable_pages       = optional(bool, false)
     signed_commits     = optional(bool, true)
