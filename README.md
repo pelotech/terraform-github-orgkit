@@ -20,7 +20,7 @@ module "github" {
 # Or adopt a single submodule.
 module "repos" {
   source  = "pelotech/orgkit/github//modules/repository"
-  version = "~> 0.1"
+  version = "~> 0.2"
 
   teams        = { developers = { id = "123", slug = "developers" } }
   repositories = [/* ... */]
@@ -37,9 +37,9 @@ organization and Actions axes:
   environment secrets, and **organization-level** secrets/variables with
   `all`/`private`/`selected` visibility.
 - **Environments** — reviewers, wait timers, and deployment branch policies.
-- **Organization rulesets** — a baseline branch-protection ruleset and a
-  required-signed-commits ruleset (the modern replacement for per-repo branch
-  protection).
+- **Organization & repository rulesets** — a generic ruleset interface with
+  opt-in presets (PR reviews, signed commits, deletion protection, force-push
+  and linear-history), the modern replacement for per-repo branch protection.
 - **Organization roles** — assign predefined org roles (e.g. `security_manager`) to
   teams.
 - **Opinionated defaults, no hardcoded policy** — every organization-specific choice
@@ -59,9 +59,9 @@ modules/organization  →  modules/teams  →  modules/repository
 
 | Submodule | Manages |
 | --------- | ------- |
-| [`organization`](modules/organization) | Org membership, owner/admin assignment, org rulesets (baseline + signed commits). |
+| [`organization`](modules/organization) | Org membership, owner/admin assignment, org rulesets (generic interface + presets). |
 | [`teams`](modules/teams) | Teams, team memberships, the optional all-members team, org-role assignments. |
-| [`repository`](modules/repository) | Repositories, team↔repo grants, repo/environment Actions variables & secrets, environments. |
+| [`repository`](modules/repository) | Repositories, team↔repo grants, per-repo rulesets, repo/environment Actions variables & secrets, environments. |
 
 The **root** additionally manages organization-level Actions secrets and variables
 (they need both secret values and repository ids, so they live at the composition
