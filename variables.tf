@@ -68,7 +68,7 @@ variable "repositories" {
     has_issues         = optional(bool, true)
     has_wiki           = optional(bool, false)
     has_projects       = optional(bool, false)
-    has_downloads      = optional(bool, true)
+    has_downloads      = optional(bool, false)
     is_template        = optional(bool, false)
     gitignore_template = optional(string, null)
     license_template   = optional(string, null)
