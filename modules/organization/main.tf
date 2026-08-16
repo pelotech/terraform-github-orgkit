@@ -12,76 +12,59 @@ resource "github_membership" "internal" {
 }
 
 #
-# Baseline branch-protection ruleset: applied to the default branch of every
-# repository. Organization admins may bypass. Tunable via var.baseline_ruleset.
+# Generic organization rulesets: one for_each resource driven by the
+# organization_rulesets map. Presets (Task 2) populate local.all_rulesets on
+# top of var.organization_rulesets; for now they are the same thing.
 #
 
-resource "github_organization_ruleset" "baseline" {
-  count = var.baseline_ruleset.enabled ? 1 : 0
-
-  name        = "Baseline"
-  enforcement = "active"
-  target      = "branch"
-
-  conditions {
-    ref_name {
-      exclude = []
-      include = ["~DEFAULT_BRANCH"]
-    }
-
-    repository_name {
-      exclude = []
-      include = ["~ALL"]
-    }
-  }
-
-  bypass_actors {
-    actor_id    = 0
-    actor_type  = "OrganizationAdmin"
-    bypass_mode = "always"
-  }
-
-  rules {
-    deletion         = var.baseline_ruleset.block_deletion
-    non_fast_forward = var.baseline_ruleset.block_force_pushes
-
-    pull_request {
-      dismiss_stale_reviews_on_push     = var.baseline_ruleset.dismiss_stale_reviews_on_push
-      require_code_owner_review         = var.baseline_ruleset.require_code_owner_review
-      require_last_push_approval        = var.baseline_ruleset.require_last_push_approval
-      required_approving_review_count   = var.baseline_ruleset.required_approving_review_count
-      required_review_thread_resolution = var.baseline_ruleset.required_review_thread_resolution
-    }
-  }
+locals {
+  all_rulesets = var.organization_rulesets
 }
 
-#
-# Signed commits required on all branches of every repository by default. A
-# repository opts out by being listed in signed_commits_excluded_repositories.
-# Separate from Baseline so opting out does not weaken the other rules. No
-# bypass_actors deliberately: org admins are bound too.
-#
+resource "github_organization_ruleset" "internal" {
+  for_each = local.all_rulesets
 
-resource "github_organization_ruleset" "signed_commits" {
-  count = var.require_signed_commits ? 1 : 0
-
-  name        = "Signed Commits"
-  enforcement = "active"
-  target      = "branch"
+  name        = each.key
+  enforcement = each.value.enforcement
+  target      = each.value.target
 
   conditions {
     ref_name {
-      exclude = []
-      include = ["~ALL"]
+      include = each.value.include_refs
+      exclude = each.value.exclude_refs
     }
-
     repository_name {
-      include = ["~ALL"]
-      exclude = var.signed_commits_excluded_repositories
+      include = each.value.include_repositories
+      exclude = each.value.exclude_repositories
+    }
+  }
+
+  dynamic "bypass_actors" {
+    for_each = each.value.bypass_actors
+    content {
+      actor_id    = bypass_actors.value.actor_type == "OrganizationAdmin" ? 1 : bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
     }
   }
 
   rules {
-    required_signatures = true
+    creation                = each.value.rules.creation
+    update                  = each.value.rules.update
+    deletion                = each.value.rules.deletion
+    non_fast_forward        = each.value.rules.non_fast_forward
+    required_signatures     = each.value.rules.required_signatures
+    required_linear_history = each.value.rules.required_linear_history
+
+    dynamic "pull_request" {
+      for_each = each.value.rules.pull_request != null ? [each.value.rules.pull_request] : []
+      content {
+        required_approving_review_count   = pull_request.value.required_approving_review_count
+        require_code_owner_review         = pull_request.value.require_code_owner_review
+        require_last_push_approval        = pull_request.value.require_last_push_approval
+        dismiss_stale_reviews_on_push     = pull_request.value.dismiss_stale_reviews_on_push
+        required_review_thread_resolution = pull_request.value.required_review_thread_resolution
+      }
+    }
   }
 }
