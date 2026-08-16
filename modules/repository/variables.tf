@@ -43,6 +43,34 @@ variable "repositories" {
       include_all_branches = optional(bool, false)
     }))
 
+    rulesets = optional(map(object({
+      enforcement  = optional(string, "active")
+      target       = optional(string, "branch")
+      include_refs = optional(list(string), ["~ALL"])
+      exclude_refs = optional(list(string), [])
+      bypass_actors = optional(list(object({
+        actor_type  = string
+        actor_id    = optional(number, 0)
+        team        = optional(string)
+        bypass_mode = optional(string, "always")
+      })), [])
+      rules = object({
+        creation                = optional(bool, false)
+        update                  = optional(bool, false)
+        deletion                = optional(bool, false)
+        non_fast_forward        = optional(bool, false)
+        required_signatures     = optional(bool, false)
+        required_linear_history = optional(bool, false)
+        pull_request = optional(object({
+          required_approving_review_count   = optional(number, 0)
+          require_code_owner_review         = optional(bool, false)
+          require_last_push_approval        = optional(bool, false)
+          dismiss_stale_reviews_on_push     = optional(bool, false)
+          required_review_thread_resolution = optional(bool, false)
+        }))
+      })
+    })), {})
+
     variables = optional(map(string), {})
     environments = optional(map(object({
       variables  = optional(map(string), {})
@@ -108,6 +136,18 @@ variable "repositories" {
       r.allow_merge_commit || r.allow_squash_merge || r.allow_rebase_merge
     ])
     error_message = "At least one merge method (allow_merge_commit, allow_squash_merge, allow_rebase_merge) must be enabled on: ${join(", ", [for r in var.repositories : r.name if !(r.allow_merge_commit || r.allow_squash_merge || r.allow_rebase_merge)])}."
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for r in var.repositories : [
+        for rs in values(r.rulesets) : [
+          for b in rs.bypass_actors :
+          b.actor_type != "Team" || b.team == null || contains(keys(var.teams), b.team)
+        ]
+      ]
+    ]))
+    error_message = "Ruleset bypass_actors reference a team not present in var.teams."
   }
 }
 
