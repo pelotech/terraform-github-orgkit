@@ -22,19 +22,19 @@ locals {
   # Each preset is a full ruleset spec (same shape as var.organization_rulesets
   # entries). rules objects specify every field so preset and user maps share a
   # type when merged.
-  _empty_rules = {
+  empty_rules = {
     creation            = false, update = false, deletion = false, non_fast_forward = false,
     required_signatures = false, required_linear_history = false, pull_request = null
   }
-  _admin_bypass = [{ actor_type = "OrganizationAdmin", actor_id = 0, bypass_mode = "always" }] # actor_id is coerced to 1 for OrganizationAdmin in the resource
+  admin_bypass = [{ actor_type = "OrganizationAdmin", actor_id = 0, bypass_mode = "always" }] # actor_id is coerced to 1 for OrganizationAdmin in the resource
 
   presets = {
     require_pull_request_reviews = {
       enforcement          = "active", target = "branch"
       include_refs         = ["~DEFAULT_BRANCH"], exclude_refs = []
       include_repositories = ["~ALL"], exclude_repositories = []
-      bypass_actors        = local._admin_bypass
-      rules = merge(local._empty_rules, { pull_request = {
+      bypass_actors        = local.admin_bypass
+      rules = merge(local.empty_rules, { pull_request = {
         required_approving_review_count   = 1
         require_code_owner_review         = true
         require_last_push_approval        = false
@@ -46,29 +46,29 @@ locals {
       enforcement          = "active", target = "branch"
       include_refs         = ["~DEFAULT_BRANCH"], exclude_refs = []
       include_repositories = ["~ALL"], exclude_repositories = []
-      bypass_actors        = local._admin_bypass
-      rules                = merge(local._empty_rules, { deletion = true })
+      bypass_actors        = local.admin_bypass
+      rules                = merge(local.empty_rules, { deletion = true })
     }
     require_signed_commits = {
       enforcement          = "active", target = "branch"
       include_refs         = ["~ALL"], exclude_refs = []
       include_repositories = ["~ALL"], exclude_repositories = var.signed_commits_excluded_repositories
       bypass_actors        = []
-      rules                = merge(local._empty_rules, { required_signatures = true })
+      rules                = merge(local.empty_rules, { required_signatures = true })
     }
     block_force_pushes = {
       enforcement          = "active", target = "branch"
       include_refs         = ["~DEFAULT_BRANCH"], exclude_refs = []
       include_repositories = ["~ALL"], exclude_repositories = []
-      bypass_actors        = local._admin_bypass
-      rules                = merge(local._empty_rules, { non_fast_forward = true })
+      bypass_actors        = local.admin_bypass
+      rules                = merge(local.empty_rules, { non_fast_forward = true })
     }
     require_linear_history = {
       enforcement          = "active", target = "branch"
       include_refs         = ["~DEFAULT_BRANCH"], exclude_refs = []
       include_repositories = ["~ALL"], exclude_repositories = []
-      bypass_actors        = local._admin_bypass
-      rules                = merge(local._empty_rules, { required_linear_history = true })
+      bypass_actors        = local.admin_bypass
+      rules                = merge(local.empty_rules, { required_linear_history = true })
     }
   }
 
