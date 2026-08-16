@@ -4,6 +4,8 @@
   "include-v-in-tag": true,
   "tag-separator": "/",
   "release-type": "terraform-module",
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": false,
   "packages": {
     ".": {}
   },
