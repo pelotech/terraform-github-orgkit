@@ -77,3 +77,17 @@ variable "signed_commits_excluded_repositories" {
   type        = list(string)
   default     = []
 }
+
+variable "enabled_presets" {
+  description = "Names of built-in ruleset presets to enable. See modules/organization/main.tf local.presets."
+  type        = list(string)
+  default     = ["require_pull_request_reviews", "restrict_deletions", "require_signed_commits"]
+
+  validation {
+    condition = alltrue([for p in var.enabled_presets : contains([
+      "require_pull_request_reviews", "restrict_deletions", "require_signed_commits",
+      "block_force_pushes", "require_linear_history",
+    ], p)])
+    error_message = "enabled_presets entries must be known preset names."
+  }
+}

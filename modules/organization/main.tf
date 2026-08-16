@@ -12,13 +12,68 @@ resource "github_membership" "internal" {
 }
 
 #
-# Generic organization rulesets: one for_each resource driven by the
-# organization_rulesets map. Presets (Task 2) populate local.all_rulesets on
-# top of var.organization_rulesets; for now they are the same thing.
+# Generic organization rulesets: one for_each resource driven by the merged
+# preset + organization_rulesets map. Presets are curated, opt-in defaults
+# selected via var.enabled_presets; entries in var.organization_rulesets with
+# the same key override the preset of that name.
 #
 
 locals {
-  all_rulesets = var.organization_rulesets
+  # Each preset is a full ruleset spec (same shape as var.organization_rulesets
+  # entries). rules objects specify every field so preset and user maps share a
+  # type when merged.
+  _empty_rules = {
+    creation            = false, update = false, deletion = false, non_fast_forward = false,
+    required_signatures = false, required_linear_history = false, pull_request = null
+  }
+  _admin_bypass = [{ actor_type = "OrganizationAdmin", actor_id = 0, bypass_mode = "always" }]
+
+  presets = {
+    require_pull_request_reviews = {
+      enforcement          = "active", target = "branch"
+      include_refs         = ["~DEFAULT_BRANCH"], exclude_refs = []
+      include_repositories = ["~ALL"], exclude_repositories = []
+      bypass_actors        = local._admin_bypass
+      rules = merge(local._empty_rules, { pull_request = {
+        required_approving_review_count   = 1
+        require_code_owner_review         = true
+        require_last_push_approval        = false
+        dismiss_stale_reviews_on_push     = false
+        required_review_thread_resolution = true
+      } })
+    }
+    restrict_deletions = {
+      enforcement          = "active", target = "branch"
+      include_refs         = ["~DEFAULT_BRANCH"], exclude_refs = []
+      include_repositories = ["~ALL"], exclude_repositories = []
+      bypass_actors        = local._admin_bypass
+      rules                = merge(local._empty_rules, { deletion = true })
+    }
+    require_signed_commits = {
+      enforcement          = "active", target = "branch"
+      include_refs         = ["~ALL"], exclude_refs = []
+      include_repositories = ["~ALL"], exclude_repositories = var.signed_commits_excluded_repositories
+      bypass_actors        = []
+      rules                = merge(local._empty_rules, { required_signatures = true })
+    }
+    block_force_pushes = {
+      enforcement          = "active", target = "branch"
+      include_refs         = ["~DEFAULT_BRANCH"], exclude_refs = []
+      include_repositories = ["~ALL"], exclude_repositories = []
+      bypass_actors        = local._admin_bypass
+      rules                = merge(local._empty_rules, { non_fast_forward = true })
+    }
+    require_linear_history = {
+      enforcement          = "active", target = "branch"
+      include_refs         = ["~DEFAULT_BRANCH"], exclude_refs = []
+      include_repositories = ["~ALL"], exclude_repositories = []
+      bypass_actors        = local._admin_bypass
+      rules                = merge(local._empty_rules, { required_linear_history = true })
+    }
+  }
+
+  selected_presets = { for p in var.enabled_presets : p => local.presets[p] }
+  all_rulesets     = merge(local.selected_presets, var.organization_rulesets)
 }
 
 resource "github_organization_ruleset" "internal" {
