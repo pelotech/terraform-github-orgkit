@@ -107,11 +107,9 @@ repository module (which would create a dependency cycle).
 manageable in the provider) and the deprecated `branch_protection_v3` resource
 (rulesets supersede it).
 
-## Planned default changes
+## Merge strategy default
 
-Defaults intended to change in a future major release. They preserve today's
-behavior for now, so existing configs see no plan churn until then:
-
-- **Merge strategy** — switch the default from merge commits to squash-only
-  (`allow_squash_merge = true`, `allow_merge_commit = false`). The module currently
-  defaults to merge commits.
+Repositories default to **squash-only** merges (`allow_squash_merge = true`,
+`allow_merge_commit = false`, `allow_rebase_merge = false`). Override per
+repository via the `allow_merge_commit` / `allow_squash_merge` /
+`allow_rebase_merge` fields (at least one must be enabled).

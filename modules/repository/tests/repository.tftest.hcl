@@ -134,7 +134,7 @@ run "rejects_env_secret_for_undeclared_environment" {
   expect_failures = [github_actions_environment_secret.internal]
 }
 
-run "defaults_preserve_current_behavior" {
+run "default_merge_strategy_is_squash_only" {
   command = plan
 
   variables {
@@ -144,15 +144,14 @@ run "defaults_preserve_current_behavior" {
   assert {
     condition = alltrue([
       github_repository.internal["app"].has_issues,
-      github_repository.internal["app"].allow_merge_commit,
+      github_repository.internal["app"].allow_squash_merge,
       github_repository.internal["app"].allow_auto_merge,
       github_repository.internal["app"].delete_branch_on_merge,
       !github_repository.internal["app"].has_wiki,
-      !github_repository.internal["app"].allow_squash_merge,
+      !github_repository.internal["app"].allow_merge_commit,
       !github_repository.internal["app"].allow_rebase_merge,
-      github_repository.internal["app"].merge_commit_message == "PR_BODY",
     ])
-    error_message = "Repository defaults must reproduce the previous hardcoded behavior."
+    error_message = "Repositories must default to squash-only merges (squash on; merge-commit and rebase off)."
   }
 }
 

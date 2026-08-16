@@ -78,8 +78,8 @@ variable "repositories" {
     enable_pages       = optional(bool, false)
     signed_commits     = optional(bool, true)
 
-    allow_merge_commit     = optional(bool, true)
-    allow_squash_merge     = optional(bool, false)
+    allow_merge_commit     = optional(bool, false)
+    allow_squash_merge     = optional(bool, true)
     allow_rebase_merge     = optional(bool, false)
     allow_auto_merge       = optional(bool, true)
     delete_branch_on_merge = optional(bool, true)
