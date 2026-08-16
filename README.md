@@ -10,7 +10,7 @@ Use the whole thing, or just one piece:
 # Everything — the root module manages the entire organization.
 module "github" {
   source  = "pelotech/orgkit/github"
-  version = "~> 0.1"
+  version = "~> 0.2"
 
   users        = [/* ... */]
   teams        = [/* ... */]
