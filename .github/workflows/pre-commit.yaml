@@ -22,7 +22,7 @@ jobs:
       - name: install hcledit
         run: |
           curl -sSLo ./hcledit.tar.gz https://github.com/minamijoyo/hcledit/releases/download/v0.2.10/hcledit_0.2.10_linux_amd64.tar.gz
-          tar -xzf hcledit.tar.gz
+          tar -xzf hcledit.tar.gz hcledit
           chmod +x hcledit
           mv hcledit /usr/local/bin/hcledit
 
@@ -32,7 +32,7 @@ jobs:
       - name: install tf-docs
         run: |
           curl -sSLo ./terraform-docs.tar.gz https://terraform-docs.io/dl/v0.24.0/terraform-docs-v0.24.0-linux-amd64.tar.gz
-          tar -xzf terraform-docs.tar.gz
+          tar -xzf terraform-docs.tar.gz terraform-docs
           chmod +x terraform-docs
           mv terraform-docs /usr/local/bin/terraform-docs
 
