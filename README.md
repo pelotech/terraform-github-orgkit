@@ -1,5 +1,10 @@
 # terraform-github-orgkit
 
+[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-orgkit-844FBA?logo=terraform)](https://registry.terraform.io/modules/pelotech/orgkit/github/latest)
+[![Release](https://img.shields.io/github/v/release/pelotech/terraform-github-orgkit)](https://github.com/pelotech/terraform-github-orgkit/releases)
+[![Tests](https://github.com/pelotech/terraform-github-orgkit/actions/workflows/test.yaml/badge.svg)](https://github.com/pelotech/terraform-github-orgkit/actions/workflows/test.yaml)
+[![License](https://img.shields.io/github/license/pelotech/terraform-github-orgkit)](LICENSE)
+
 A composable Terraform module suite for managing a **whole GitHub organization** as
 code — members, teams, repositories, GitHub Actions (variables, secrets and
 environments), organization rulesets, and organization roles.
