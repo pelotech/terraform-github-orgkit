@@ -1,0 +1,30 @@
+---
+name: nix-devshell
+description: "install nix and export the dev shell PATH and TENV_* env"
+inputs:
+  gh-token:
+    description: github token for nix and tenv downloads
+    default: ${{ github.token }}
+  working-directory:
+    description: directory containing flake.nix
+    default: '.'
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+      with:
+        github_access_token: ${{ inputs.gh-token }}
+        # single-user mode so aws credentials work
+        install_options: --no-daemon
+
+    - name: Put nix devshell tools and env on PATH
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: | # zizmor: ignore[github-env]
+        nix develop -c printenv PATH >> "$GITHUB_PATH"
+        # TENV_* is defined once in flake.nix; token avoids GitHub API rate limits
+        nix develop -c printenv | { grep '^TENV_' || true; } >> "$GITHUB_ENV"
+        echo "TENV_GITHUB_TOKEN=$GH_TOKEN" >> "$GITHUB_ENV"
+      env:
+        GH_TOKEN: ${{ inputs.gh-token }}

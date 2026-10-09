@@ -7,11 +7,15 @@ Thanks for contributing to **terraform-github-orgkit**!
 - Work on a feature branch — never commit directly to `main`.
 - Use [Conventional Commits](https://www.conventionalcommits.org/). PR titles are
   linted, and `release-please` derives the changelog and version from them.
+- Tooling comes from the Nix flake: `nix develop` (or `direnv allow` with the
+  committed `.envrc`). It provides terraform (via tenv, pinned by
+  `.terraform-version`), `prek`, tflint, terraform-docs, actionlint, and zizmor.
+  Install the git hooks once with `prek install`.
 - Before opening a PR:
 
   ```sh
   terraform fmt -recursive
-  pre-commit run --all-files
+  prek run --all-files
   # run tests for any submodule you touched
   cd modules/<name> && terraform init && terraform test
   ```

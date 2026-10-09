@@ -23,3 +23,10 @@ modules/**/.terraform.lock.hcl
 
 # IntelliJ
 .idea
+
+# direnv
+.direnv
+
+# nix
+result
+result-*

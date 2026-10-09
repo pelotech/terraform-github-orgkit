@@ -1,4 +1,6 @@
 name: test
+permissions:
+  contents: read
 on:
   push:
     branches:
@@ -6,6 +8,9 @@ on:
   pull_request:
     branches:
       - main
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   terraform-test:
     runs-on: ubuntu-latest
@@ -22,17 +27,18 @@ jobs:
       run:
         working-directory: modules/${{ matrix.module }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ env.TF_PLUGIN_CACHE_DIR }}
           key: terraform-plugins-${{ runner.os }}-${{ hashFiles('modules/*/versions.tf') }}
           restore-keys: |
             terraform-plugins-${{ runner.os }}-
-      - uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4
+      - uses: $/.github/actions/nix-devshell
         with:
-          terraform_version: "1.9.8"
-          terraform_wrapper: false
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: terraform init
         run: |

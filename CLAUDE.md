@@ -75,9 +75,11 @@ modules/organization ──▶ modules/teams ──▶ modules/repository
 
 ## Verifying changes
 
+Tools come from the Nix flake (`nix develop` / direnv `.envrc`); hooks run via `prek`.
+
 ```sh
 terraform fmt -recursive
 cd examples/complete && terraform init && terraform validate
 cd ../repository && terraform init && terraform validate
-pre-commit run --all-files
+prek run --all-files
 ```
