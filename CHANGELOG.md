@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.1](https://github.com/pelotech/terraform-github-orgkit/compare/v0.3.0...v0.3.1) (2026-10-09)
+
+
+### Chores
+
+* add nix flake dev shell and switch to prek ([#16](https://github.com/pelotech/terraform-github-orgkit/issues/16)) ([e8aed96](https://github.com/pelotech/terraform-github-orgkit/commit/e8aed965e00e5ccd5101e99259300229645c6e73))
+* **deps:** update dependency hashicorp/terraform to v1.16.5 ([#15](https://github.com/pelotech/terraform-github-orgkit/issues/15)) ([5fcf775](https://github.com/pelotech/terraform-github-orgkit/commit/5fcf775afee146e33987341a5a2c681ff5d0d44a))
+* **deps:** update pre-commit hook alessandrojcm/commitlint-pre-commit-hook to v9.27.0 ([#18](https://github.com/pelotech/terraform-github-orgkit/issues/18)) ([d0dc9f8](https://github.com/pelotech/terraform-github-orgkit/commit/d0dc9f8264860e7764c6cb22f24ce9e1d07cd4da))
+* **deps:** update pre-commit hook kjanat/actionlint to v1.17 ([#19](https://github.com/pelotech/terraform-github-orgkit/issues/19)) ([db25ef2](https://github.com/pelotech/terraform-github-orgkit/commit/db25ef2a53550a1904da76ac0a2c9caddbfc9cf3))
+
 ## [0.3.0](https://github.com/pelotech/terraform-github-orgkit/compare/v0.2.0...v0.3.0) (2026-08-16)
 
 
