@@ -33,8 +33,12 @@ resource "github_repository" "internal" {
   allow_rebase_merge     = each.value.allow_rebase_merge
   allow_squash_merge     = each.value.allow_squash_merge
   delete_branch_on_merge = each.value.delete_branch_on_merge
-  merge_commit_message   = each.value.merge_commit_message
-  merge_commit_title     = each.value.merge_commit_title
+
+  # GitHub ignores the merge commit title/message unless merge commits are
+  # allowed and reports its own defaults back, so mirror those to avoid a
+  # perpetual diff.
+  merge_commit_message = each.value.allow_merge_commit ? each.value.merge_commit_message : "PR_TITLE"
+  merge_commit_title   = each.value.allow_merge_commit ? each.value.merge_commit_title : "MERGE_MESSAGE"
 
   dynamic "template" {
     for_each = each.value.template != null ? [each.value.template] : []
