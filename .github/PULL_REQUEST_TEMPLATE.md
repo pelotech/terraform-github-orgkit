@@ -6,7 +6,7 @@
 
 - [ ] PR title follows Conventional Commits (it is linted)
 - [ ] `terraform fmt -recursive` is clean
-- [ ] `pre-commit run --all-files` passes (docs regenerated if inputs/outputs/resources changed)
+- [ ] `prek run --all-files` passes (docs regenerated if inputs/outputs/resources changed)
 - [ ] `terraform test` passes for any submodule I changed
 - [ ] Breaking input changes are described below (pre-1.0)
 
