@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.3.1](https://github.com/pelotech/terraform-github-orgkit/compare/v0.3.0...v0.3.1) (2026-10-20)
+
+
+### Bug Fixes
+
+* **repository:** avoid perpetual merge_commit_* diff when merge commits are disabled ([#24](https://github.com/pelotech/terraform-github-orgkit/issues/24)) ([8d936e5](https://github.com/pelotech/terraform-github-orgkit/commit/8d936e5da2fbd0abd648b0c56aaba01fd50284fe))
+
+
+### Chores
+
+* add nix flake dev shell and switch to prek ([#16](https://github.com/pelotech/terraform-github-orgkit/issues/16)) ([e8aed96](https://github.com/pelotech/terraform-github-orgkit/commit/e8aed965e00e5ccd5101e99259300229645c6e73))
+* **deps:** update cachix/install-nix-action action to v31.11.2 ([#20](https://github.com/pelotech/terraform-github-orgkit/issues/20)) ([4808236](https://github.com/pelotech/terraform-github-orgkit/commit/48082361c36bbbd11c7c13d9e9316b4a83ba7f03))
+* **deps:** update dependency hashicorp/terraform to v1.16.5 ([#15](https://github.com/pelotech/terraform-github-orgkit/issues/15)) ([5fcf775](https://github.com/pelotech/terraform-github-orgkit/commit/5fcf775afee146e33987341a5a2c681ff5d0d44a))
+* **deps:** update dependency hashicorp/terraform to v1.16.6 ([#21](https://github.com/pelotech/terraform-github-orgkit/issues/21)) ([7121822](https://github.com/pelotech/terraform-github-orgkit/commit/71218221b3dc9b22d340b4a9f03b902df811d5b8))
+* **deps:** update pre-commit hook alessandrojcm/commitlint-pre-commit-hook to v9.27.0 ([#18](https://github.com/pelotech/terraform-github-orgkit/issues/18)) ([d0dc9f8](https://github.com/pelotech/terraform-github-orgkit/commit/d0dc9f8264860e7764c6cb22f24ce9e1d07cd4da))
+* **deps:** update pre-commit hook antonbabenko/pre-commit-terraform to v1.109.3 ([#23](https://github.com/pelotech/terraform-github-orgkit/issues/23)) ([9360c5f](https://github.com/pelotech/terraform-github-orgkit/commit/9360c5ff467ff9aa8c9510f8030e547affd74673))
+* **deps:** update pre-commit hook kjanat/actionlint to v1.17 ([#19](https://github.com/pelotech/terraform-github-orgkit/issues/19)) ([db25ef2](https://github.com/pelotech/terraform-github-orgkit/commit/db25ef2a53550a1904da76ac0a2c9caddbfc9cf3))
+* **deps:** update pre-commit hook zizmorcore/zizmor-pre-commit to v1.31.1 ([#22](https://github.com/pelotech/terraform-github-orgkit/issues/22)) ([414d64e](https://github.com/pelotech/terraform-github-orgkit/commit/414d64efe569483c48c0797a124dfe2ea409904e))
+
 ## [0.3.0](https://github.com/pelotech/terraform-github-orgkit/compare/v0.2.0...v0.3.0) (2026-08-16)
 
 
