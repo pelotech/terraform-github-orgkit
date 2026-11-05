@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/pelotech/terraform-github-orgkit/compare/v0.3.1...v0.3.2) (2026-11-05)
+
+
+### Chores
+
+* **deps:** update dependency hashicorp/terraform to v1.17.1 ([#25](https://github.com/pelotech/terraform-github-orgkit/issues/25)) ([af6a2dd](https://github.com/pelotech/terraform-github-orgkit/commit/af6a2ddfedebdd02e7b059a9dc0ba236a29e6ea8))
+
 ## [0.3.1](https://github.com/pelotech/terraform-github-orgkit/compare/v0.3.0...v0.3.1) (2026-10-20)
 
 
