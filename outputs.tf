@@ -1,5 +1,5 @@
 output "members" {
-  description = "Map of organization member username => managed membership username."
+  description = "Map of organization member username => username. The member set is `users` when membership is managed, and the union of team members when manage_membership = false."
   value       = module.organization.members
 }
 

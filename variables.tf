@@ -1,11 +1,37 @@
 variable "users" {
-  description = "Organization members. `fullname`/`email` are informational; membership is keyed on `username`."
+  description = "Organization members. `fullname`/`email` are informational; membership is keyed on `username`. Ignored when manage_membership = false."
   type = list(object({
     username = string
     fullname = optional(string, "")
     email    = optional(string, "")
   }))
   default = []
+}
+
+variable "manage_membership" {
+  description = <<-EOT
+    Manage organization membership (`github_membership`) from `users`. When
+    `false`, orgkit creates no membership resources, `users` is ignored, and the
+    member set (used for the all-members team) is the union of `teams[].members`.
+    Adding someone to a team still invites them to the organization, but the owner
+    (`admin`) role is no longer enforced. Safe to turn off at any time unless
+    `remove_unlisted_members` has been applied as `true`.
+  EOT
+  type        = bool
+  default     = true
+}
+
+variable "remove_unlisted_members" {
+  description = <<-EOT
+    Remove a user from the organization when they are dropped from `users`. When
+    `false` (default), a dropped user loses their team memberships but stays in
+    the organization, and Terraform simply stops tracking them. One-way: once
+    applied as `true`, setting it back to `false` or setting
+    `manage_membership = false` removes every managed member from the
+    organization.
+  EOT
+  type        = bool
+  default     = false
 }
 
 variable "owners" {
@@ -24,8 +50,8 @@ variable "owners_team" {
   default     = null
 
   validation {
-    condition     = var.owners_team == null || contains(var.teams[*].name, coalesce(var.owners_team, ""))
-    error_message = "owners_team '${coalesce(var.owners_team, "")}' is not a declared team."
+    condition     = var.owners_team == null ? true : contains(var.teams[*].name, var.owners_team)
+    error_message = "owners_team '${var.owners_team == null ? "" : var.owners_team}' is not a declared team."
   }
 }
 
@@ -44,7 +70,7 @@ variable "teams" {
   default = []
 
   validation {
-    condition = alltrue([
+    condition = !var.manage_membership || alltrue([
       for t in var.teams :
       alltrue([for p in t.members : contains(var.users[*].username, p)])
     ])

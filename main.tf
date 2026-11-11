@@ -7,7 +7,9 @@
 #
 
 locals {
-  usernames = toset(var.users[*].username)
+  # The member set: `users` when membership is managed, otherwise the union of
+  # every team's members (so `users` can be dropped entirely).
+  usernames = var.manage_membership ? toset(var.users[*].username) : toset(flatten(var.teams[*].members))
 
   # Owners are either explicit (var.owners) or derived from a named team's members
   # (var.owners_team). No owners team is hardcoded.
@@ -24,6 +26,8 @@ module "organization" {
 
   members                              = local.usernames
   owners                               = local.owners
+  manage_membership                    = var.manage_membership
+  remove_unlisted_members              = var.remove_unlisted_members
   organization_rulesets                = var.organization_rulesets
   enabled_presets                      = var.enabled_presets
   signed_commits_excluded_repositories = local.signed_commits_excluded

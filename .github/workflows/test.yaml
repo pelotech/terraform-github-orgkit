@@ -19,13 +19,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        module:
-          - organization
-          - teams
-          - repository
+        dir:
+          - .
+          - modules/organization
+          - modules/teams
+          - modules/repository
     defaults:
       run:
-        working-directory: modules/${{ matrix.module }}
+        working-directory: ${{ matrix.dir }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
