@@ -66,6 +66,7 @@ team keep working and `users` can be dropped; the member set is the union of
 ### Upgrading from 0.3.x
 
 - Terraform 1.16 or newer is required.
+- The `integrations/github` provider 6.13 or newer is required.
 - No state changes on upgrade.
 - Dropping a user from `users` no longer removes them from the organization.
   Set `remove_unlisted_members = true` to keep the 0.3.x behaviour.
