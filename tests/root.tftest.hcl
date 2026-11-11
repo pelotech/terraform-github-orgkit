@@ -13,7 +13,7 @@ run "managed_members_come_from_users" {
     teams = [{ name = "core", description = "", members = ["alice"] }]
   }
   assert {
-    condition     = keys(output.members) == tolist(["alice", "bob"])
+    condition     = sort(keys(output.members)) == tolist(["alice", "bob"])
     error_message = "When managed, the member set must be exactly `users`."
   }
 }
@@ -25,7 +25,7 @@ run "removal_opt_in_keeps_member_set" {
     users                   = [{ username = "alice" }, { username = "bob" }]
   }
   assert {
-    condition     = keys(output.members) == tolist(["alice", "bob"])
+    condition     = sort(keys(output.members)) == tolist(["alice", "bob"])
     error_message = "remove_unlisted_members must not change the member set."
   }
 }
@@ -48,7 +48,7 @@ run "empty_users_derives_members_from_teams" {
     ]
   }
   assert {
-    condition     = keys(output.members) == tolist(["alice", "bob", "carol"])
+    condition     = sort(keys(output.members)) == tolist(["alice", "bob", "carol"])
     error_message = "With no `users`, the member set must be the union of all team members."
   }
 }

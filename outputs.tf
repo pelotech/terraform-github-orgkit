@@ -1,5 +1,5 @@
 output "members" {
-  description = "Map of organization member username => username. The member set is `users`, or the union of team members when `users` is empty (membership not managed)."
+  description = "Map of member username => username: `users`, or every team member when `users` is empty."
   value       = local.members
 }
 

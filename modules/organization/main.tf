@@ -1,27 +1,17 @@
 #
-# Organization membership for var.members (none when it is empty). Owners map to
-# GitHub's `admin` role; everyone else is a plain `member`. Which usernames are
-# owners is entirely the caller's choice (var.owners) — this module bakes in no
-# owners-team convention.
+# Organization membership. Owners map to GitHub's `admin` role; everyone else is
+# a plain `member`. Which usernames are owners is entirely the caller's choice
+# (var.owners) — this module bakes in no owners-team convention.
 #
-# Two mutually exclusive resources, because `lifecycle.destroy` must be a literal:
+# `lifecycle.destroy` must be a literal, hence two resources, only one of which
+# is ever populated:
 #
-# - `internal` (default): an instance that leaves the configuration — a user
-#   dropped from var.members, or var.members emptied altogether — is forgotten
-#   by Terraform, never destroyed, so nobody is removed from the organization.
-#   This is what makes it safe to stop managing membership at any time.
-# - `removable` (var.remove_unlisted_members): a normal resource; a dropped user
-#   really is removed from the organization. One-way — leaving this mode
-#   destroys its instances.
+# - `internal`: a member who leaves var.members is forgotten, not removed.
+# - `removable`: a member who leaves var.members is removed from the organization.
 #
-
-locals {
-  retained_members  = var.remove_unlisted_members ? toset([]) : var.members
-  removable_members = var.remove_unlisted_members ? var.members : toset([])
-}
 
 resource "github_membership" "internal" {
-  for_each = local.retained_members
+  for_each = var.remove_unlisted_members ? toset([]) : var.members
 
   username = each.value
   role     = contains(var.owners, each.value) ? "admin" : "member"
@@ -32,7 +22,7 @@ resource "github_membership" "internal" {
 }
 
 resource "github_membership" "removable" {
-  for_each = local.removable_members
+  for_each = var.remove_unlisted_members ? var.members : toset([])
 
   username = each.value
   role     = contains(var.owners, each.value) ? "admin" : "member"

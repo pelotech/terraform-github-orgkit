@@ -200,16 +200,16 @@ resource "github_team_repository" "internal" {
 #
 
 locals {
-  # Decided from a plan-time-known flag when one is given, so that a team created
-  # in the same apply (id unknown) does not make the for_each below unknown.
+  # An explicit flag keeps the for_each below plannable when the team id is not
+  # known yet.
   grant_all_members_read = var.grant_all_members_read != null ? var.grant_all_members_read : var.all_members_team_id != null
 }
 
 resource "github_team_repository" "everyone" {
-  for_each = !local.grant_all_members_read ? {} : {
+  for_each = local.grant_all_members_read ? {
     for name, r in local.repositories : name => r
     if !r.restricted
-  }
+  } : {}
 
   team_id    = var.all_members_team_id
   repository = github_repository.internal[each.key].name

@@ -50,8 +50,7 @@ resource "github_team_members" "internal" {
 # The all-members team: contains every organization member and provides the
 # default read access that non-restricted repositories grant (see the repository
 # module). Membership is derived from var.members so it stays in sync, and is
-# omitted when there are no members, since github_team_members requires at least
-# one entry.
+# skipped when empty (github_team_members requires at least one entry).
 #
 
 resource "github_team" "everyone" {

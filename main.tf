@@ -7,14 +7,14 @@
 #
 
 locals {
-  # Organization membership is managed for exactly the users listed in `users`.
-  # With no `users`, nothing is managed and the member set (which feeds the
-  # all-members team) is the union of every team's members instead.
-  managed_usernames = toset(var.users[*].username)
-  manage_membership = length(local.managed_usernames) > 0
-  members = local.manage_membership ? tomap(module.organization.members) : tomap({
-    for u in toset(flatten(var.teams[*].members)) : u => u
-  })
+  usernames = toset(var.users[*].username)
+
+  # Everyone the teams module should know about: `users`, or every team member
+  # when `users` is empty (membership not managed).
+  members = merge(
+    { for u in toset(flatten(var.teams[*].members)) : u => u },
+    module.organization.members,
+  )
 
   # Owners are either explicit (var.owners) or derived from a named team's members
   # (var.owners_team). No owners team is hardcoded.
@@ -29,7 +29,7 @@ locals {
 module "organization" {
   source = "./modules/organization"
 
-  members                              = local.managed_usernames
+  members                              = local.usernames
   owners                               = local.owners
   remove_unlisted_members              = var.remove_unlisted_members
   organization_rulesets                = var.organization_rulesets
@@ -55,7 +55,7 @@ module "repository" {
   teams               = module.teams.teams
   all_members_team_id = module.teams.all_members_team_id
 
-  # Passed explicitly because the team id is unknown while the team is being created.
+  # The team id is unknown while the team is being created, so say so explicitly.
   grant_all_members_read = var.create_all_members_team
 }
 

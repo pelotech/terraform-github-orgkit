@@ -15,7 +15,7 @@ variable "owners" {
 }
 
 variable "remove_unlisted_members" {
-  description = "Remove a user from the organization when they are dropped from `members`. When `false` (default), a dropped user is forgotten by Terraform and stays in the organization. One-way: once applied as `true`, setting it back to `false` (or emptying `members`) removes every managed member from the organization."
+  description = "Remove a user from the organization when they are dropped from `members` (default: they stay, and Terraform stops tracking them). One-way: turning it off again, or emptying `members`, removes every managed member."
   type        = bool
   default     = false
 }
