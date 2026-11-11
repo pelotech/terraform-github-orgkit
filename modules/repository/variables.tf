@@ -19,7 +19,7 @@ variable "repositories" {
     has_issues         = optional(bool, true)
     has_wiki           = optional(bool, false)
     has_projects       = optional(bool, false)
-    has_downloads      = optional(bool, false)
+    has_downloads      = optional(bool, false) # accepted but ignored: deprecated and unused by the provider
     is_template        = optional(bool, false)
     gitignore_template = optional(string, null)
     license_template   = optional(string, null)

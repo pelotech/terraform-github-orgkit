@@ -20,7 +20,6 @@ resource "github_repository" "internal" {
   has_issues         = each.value.has_issues
   has_wiki           = each.value.has_wiki
   has_projects       = each.value.has_projects
-  has_downloads      = each.value.has_downloads
   is_template        = each.value.is_template
   gitignore_template = each.value.gitignore_template
   license_template   = each.value.license_template
