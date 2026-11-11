@@ -82,3 +82,61 @@ run "custom_ruleset_overrides_preset_by_name" {
     error_message = "A custom organization_rulesets entry must override the preset of the same name."
   }
 }
+
+run "default_retains_membership" {
+  command = plan
+  variables {
+    members = ["alice", "bob"]
+    owners  = ["alice"]
+  }
+  assert {
+    condition     = github_membership.internal["alice"].role == "admin"
+    error_message = "Owners must map to the admin membership role."
+  }
+  assert {
+    condition     = github_membership.internal["bob"].role == "member"
+    error_message = "Non-owners must map to the member membership role."
+  }
+  assert {
+    condition     = length(github_membership.removable) == 0
+    error_message = "Removable memberships must only exist when remove_unlisted_members = true."
+  }
+}
+
+run "removal_opt_in_uses_removable" {
+  command = plan
+  variables {
+    remove_unlisted_members = true
+    members                 = ["alice", "bob"]
+    owners                  = ["alice"]
+  }
+  assert {
+    condition     = github_membership.removable["alice"].role == "admin" && github_membership.removable["bob"].role == "member"
+    error_message = "Removable memberships must carry the same roles."
+  }
+  assert {
+    condition     = length(github_membership.internal) == 0
+    error_message = "A member must never be managed by both membership resources."
+  }
+  assert {
+    condition     = output.members == { alice = "alice", bob = "bob" }
+    error_message = "The members output must list every member in removal mode."
+  }
+}
+
+run "unmanaged_creates_no_membership" {
+  command = plan
+  variables {
+    manage_membership       = false
+    remove_unlisted_members = true
+    members                 = ["alice", "bob"]
+  }
+  assert {
+    condition     = length(github_membership.internal) + length(github_membership.removable) == 0
+    error_message = "manage_membership = false must create no github_membership resources."
+  }
+  assert {
+    condition     = output.members == { alice = "alice", bob = "bob" }
+    error_message = "The members output must still list every member when membership is unmanaged."
+  }
+}
