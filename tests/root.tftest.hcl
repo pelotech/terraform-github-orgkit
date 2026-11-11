@@ -6,15 +6,6 @@ mock_provider "github" {
   }
 }
 
-# The repository module's default-read grant keys its for_each off the
-# all-members team id, which is unknown when planning a brand-new team. Give it a
-# known id so these plans exercise the composed module.
-override_resource {
-  target          = module.teams.github_team.everyone[0]
-  override_during = plan
-  values          = { id = "1" }
-}
-
 run "managed_members_come_from_users" {
   command = plan
   variables {
@@ -86,4 +77,14 @@ run "unmanaged_with_no_team_members_plans" {
     condition     = length(output.members) == 0
     error_message = "An unmanaged org with no team members must plan with an empty member set."
   }
+}
+
+run "new_all_members_team_plans_default_read_grant" {
+  command = plan
+  variables {
+    users        = [{ username = "alice" }]
+    repositories = [{ name = "widgets", description = "" }]
+  }
+  # No assertion: the all-members team id is unknown here, and the plan itself
+  # failing ("Invalid for_each argument") is what this run guards against.
 }

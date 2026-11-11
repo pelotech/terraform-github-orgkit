@@ -50,6 +50,9 @@ module "repository" {
   repository_secrets  = var.secrets.repos
   teams               = module.teams.teams
   all_members_team_id = module.teams.all_members_team_id
+
+  # Passed explicitly because the team id is unknown while the team is being created.
+  grant_all_members_read = var.create_all_members_team
 }
 
 #

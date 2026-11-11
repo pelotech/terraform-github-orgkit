@@ -222,6 +222,12 @@ variable "all_members_team_id" {
   default     = null
 }
 
+variable "grant_all_members_read" {
+  description = "Whether to grant the all-members team default read access. `null` (default) infers it from `all_members_team_id` being set, which only works when that id is already known at plan time; set it explicitly when the team is created in the same apply."
+  type        = bool
+  default     = null
+}
+
 variable "repository_secrets" {
   description = <<-EOT
     Per-repository Actions and environment secret values (plaintext), keyed by
