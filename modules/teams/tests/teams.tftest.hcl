@@ -50,3 +50,21 @@ run "rejects_unknown_org_role" {
 
   expect_failures = [github_organization_role_team.internal]
 }
+
+run "all_members_team_skips_membership_when_empty" {
+  command = plan
+
+  variables {
+    members = {}
+    teams   = []
+  }
+
+  assert {
+    condition     = length(github_team.everyone) == 1
+    error_message = "The all-members team itself must still be created."
+  }
+  assert {
+    condition     = length(github_team_members.everyone) == 0
+    error_message = "An empty member set must not plan a github_team_members with no members."
+  }
+}
