@@ -3,7 +3,8 @@
 Optionally manages GitHub organization membership (owners mapped to `admin`,
 everyone else `member`; switch it off with `manage_membership = false`). By
 default a user dropped from `members` is forgotten rather than removed from the
-organization; set `remove_unlisted_members = true` to remove them. Also manages the organization-wide rulesets: a baseline branch-protection ruleset
+organization; set `remove_unlisted_members = true` to remove them. Also manages
+the organization-wide rulesets: a baseline branch-protection ruleset
 on the default branch of every repository, and a required-signed-commits ruleset.
 
 Who is an owner is entirely the caller's choice (`var.owners`) — no owners team is
@@ -21,7 +22,7 @@ hardcoded.
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_github"></a> [github](#provider\_github) | 6.13.0 |
+| <a name="provider_github"></a> [github](#provider\_github) | ~> 6.0 |
 
 ## Modules
 
