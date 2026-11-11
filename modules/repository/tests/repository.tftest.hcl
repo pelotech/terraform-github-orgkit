@@ -271,3 +271,43 @@ run "rejects_invalid_ruleset_enforcement" {
   }
   expect_failures = [var.repositories]
 }
+
+run "default_read_grant_inferred_from_team_id" {
+  command = plan
+
+  variables {
+    repositories = [{ name = "app", description = "" }]
+  }
+
+  assert {
+    condition     = github_team_repository.everyone["app"].team_id == "999"
+    error_message = "With grant_all_members_read unset, a known all_members_team_id must still grant default read."
+  }
+}
+
+run "default_read_grant_can_be_disabled_explicitly" {
+  command = plan
+
+  variables {
+    repositories           = [{ name = "app", description = "" }]
+    grant_all_members_read = false
+  }
+
+  assert {
+    condition     = length(github_team_repository.everyone) == 0
+    error_message = "grant_all_members_read = false must skip the default read grant even when a team id is given."
+  }
+}
+
+run "has_downloads_is_not_sent_to_the_provider" {
+  command = plan
+
+  variables {
+    repositories = [{ name = "app", description = "", has_downloads = true }]
+  }
+
+  assert {
+    condition     = github_repository.internal["app"].has_downloads == null
+    error_message = "has_downloads is deprecated in the provider; the input is accepted but must not be set on the resource."
+  }
+}

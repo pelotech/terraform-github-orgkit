@@ -19,7 +19,7 @@ variable "repositories" {
     has_issues         = optional(bool, true)
     has_wiki           = optional(bool, false)
     has_projects       = optional(bool, false)
-    has_downloads      = optional(bool, false)
+    has_downloads      = optional(bool, false) # ignored: deprecated by the provider
     is_template        = optional(bool, false)
     gitignore_template = optional(string, null)
     license_template   = optional(string, null)
@@ -219,6 +219,12 @@ variable "teams" {
 variable "all_members_team_id" {
   description = "ID of the all-members team that receives default read access on non-restricted repositories. null disables the default read grant."
   type        = string
+  default     = null
+}
+
+variable "grant_all_members_read" {
+  description = "Grant the all-members team default read access. `null` infers it from `all_members_team_id`, which cannot be planned when that team is created in the same apply; set it explicitly in that case."
+  type        = bool
   default     = null
 }
 

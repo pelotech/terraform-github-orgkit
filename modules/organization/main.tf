@@ -3,9 +3,26 @@
 # a plain `member`. Which usernames are owners is entirely the caller's choice
 # (var.owners) — this module bakes in no owners-team convention.
 #
+# `lifecycle.destroy` must be a literal, hence two resources, only one of which
+# is ever populated:
+#
+# - `internal`: a member who leaves var.members is forgotten, not removed.
+# - `removable`: a member who leaves var.members is removed from the organization.
+#
 
 resource "github_membership" "internal" {
-  for_each = var.members
+  for_each = var.remove_unlisted_members ? toset([]) : var.members
+
+  username = each.value
+  role     = contains(var.owners, each.value) ? "admin" : "member"
+
+  lifecycle {
+    destroy = false
+  }
+}
+
+resource "github_membership" "removable" {
+  for_each = var.remove_unlisted_members ? var.members : toset([])
 
   username = each.value
   role     = contains(var.owners, each.value) ? "admin" : "member"

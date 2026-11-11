@@ -14,6 +14,12 @@ variable "owners" {
   default     = []
 }
 
+variable "remove_unlisted_members" {
+  description = "Remove a user from the organization when they are dropped from `members` (default: they stay, and Terraform stops tracking them). One-way: turning it off again, or emptying `members`, removes every managed member."
+  type        = bool
+  default     = false
+}
+
 variable "organization_rulesets" {
   description = <<-EOT
     Organization rulesets, keyed by name. Merged with (and overridden by name by)

@@ -1,11 +1,17 @@
 variable "users" {
-  description = "Organization members. `fullname`/`email` are informational; membership is keyed on `username`."
+  description = "Organization members, keyed on `username` (`fullname`/`email` are informational). Leave empty to not manage organization membership; the member set then comes from `teams[].members`."
   type = list(object({
     username = string
     fullname = optional(string, "")
     email    = optional(string, "")
   }))
   default = []
+}
+
+variable "remove_unlisted_members" {
+  description = "Remove a user from the organization when they are dropped from `users` (default: they stay, and Terraform stops tracking them). One-way: turning it off again, or emptying `users`, removes every managed member."
+  type        = bool
+  default     = false
 }
 
 variable "owners" {
@@ -24,8 +30,8 @@ variable "owners_team" {
   default     = null
 
   validation {
-    condition     = var.owners_team == null || contains(var.teams[*].name, coalesce(var.owners_team, ""))
-    error_message = "owners_team '${coalesce(var.owners_team, "")}' is not a declared team."
+    condition     = var.owners_team == null || contains(var.teams[*].name, var.owners_team)
+    error_message = "owners_team '${var.owners_team == null ? "" : var.owners_team}' is not a declared team."
   }
 }
 
@@ -44,7 +50,7 @@ variable "teams" {
   default = []
 
   validation {
-    condition = alltrue([
+    condition = length(var.users) == 0 || alltrue([
       for t in var.teams :
       alltrue([for p in t.members : contains(var.users[*].username, p)])
     ])
@@ -68,7 +74,7 @@ variable "repositories" {
     has_issues         = optional(bool, true)
     has_wiki           = optional(bool, false)
     has_projects       = optional(bool, false)
-    has_downloads      = optional(bool, false)
+    has_downloads      = optional(bool, false) # ignored: deprecated by the provider
     is_template        = optional(bool, false)
     gitignore_template = optional(string, null)
     license_template   = optional(string, null)

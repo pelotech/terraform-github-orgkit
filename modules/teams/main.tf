@@ -35,7 +35,7 @@ locals {
 resource "github_team_members" "internal" {
   for_each = local.people
 
-  team_id = github_team.internal[each.key].id
+  team_slug = github_team.internal[each.key].slug
 
   dynamic "members" {
     for_each = each.value
@@ -49,7 +49,8 @@ resource "github_team_members" "internal" {
 #
 # The all-members team: contains every organization member and provides the
 # default read access that non-restricted repositories grant (see the repository
-# module). Membership is derived from var.members so it stays in sync.
+# module). Membership is derived from var.members so it stays in sync, and is
+# skipped when empty (github_team_members requires at least one entry).
 #
 
 resource "github_team" "everyone" {
@@ -61,9 +62,9 @@ resource "github_team" "everyone" {
 }
 
 resource "github_team_members" "everyone" {
-  count = var.create_all_members_team ? 1 : 0
+  count = var.create_all_members_team && length(var.members) > 0 ? 1 : 0
 
-  team_id = github_team.everyone[0].id
+  team_slug = github_team.everyone[0].slug
 
   dynamic "members" {
     for_each = var.members

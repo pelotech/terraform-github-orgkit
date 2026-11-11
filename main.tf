@@ -9,6 +9,13 @@
 locals {
   usernames = toset(var.users[*].username)
 
+  # Everyone the teams module should know about: `users`, or every team member
+  # when `users` is empty (membership not managed).
+  members = merge(
+    { for u in toset(flatten(var.teams[*].members)) : u => u },
+    module.organization.members,
+  )
+
   # Owners are either explicit (var.owners) or derived from a named team's members
   # (var.owners_team). No owners team is hardcoded.
   owners = var.owners_team != null ? toset(flatten([
@@ -24,6 +31,7 @@ module "organization" {
 
   members                              = local.usernames
   owners                               = local.owners
+  remove_unlisted_members              = var.remove_unlisted_members
   organization_rulesets                = var.organization_rulesets
   enabled_presets                      = var.enabled_presets
   signed_commits_excluded_repositories = local.signed_commits_excluded
@@ -34,7 +42,7 @@ module "teams" {
 
   teams                   = var.teams
   owners                  = local.owners
-  members                 = module.organization.members
+  members                 = local.members
   create_all_members_team = var.create_all_members_team
   all_members_team_name   = var.all_members_team_name
 }
@@ -46,6 +54,9 @@ module "repository" {
   repository_secrets  = var.secrets.repos
   teams               = module.teams.teams
   all_members_team_id = module.teams.all_members_team_id
+
+  # The team id is unknown while the team is being created, so say so explicitly.
+  grant_all_members_read = var.create_all_members_team
 }
 
 #

@@ -1,6 +1,6 @@
 output "members" {
-  description = "Map of organization member username => managed membership username."
-  value       = module.organization.members
+  description = "Map of member username => username: `users`, or every team member when `users` is empty."
+  value       = local.members
 }
 
 output "teams" {

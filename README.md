@@ -32,6 +32,34 @@ module "repos" {
 }
 ```
 
+### Organization membership
+
+| `users` | `remove_unlisted_members` | Effect |
+|---|---|---|
+| listed | `false` (default) | Membership and role are managed. A user dropped from `users` loses their teams but stays in the organization. |
+| listed | `true` | As above, but a dropped user is removed from the organization. |
+| empty | n/a | Membership is not managed. The all-members team is every team member. |
+
+- Emptying `users` removes nobody from the organization, unless
+  `remove_unlisted_members` is on. Users on no team do leave the all-members
+  team.
+- `remove_unlisted_members` is one-way. Turning it on is safe, and applies to
+  users dropped afterwards. Turning it off, or emptying `users` while it is on,
+  removes every managed member; to back out, first remove
+  `module.<name>.module.organization.github_membership.removable` from state.
+- `users` is all or nothing: once it lists anyone, every team member must be
+  listed. While it is empty, team members are not validated at plan time.
+- With `users` empty the owner (`admin`) role is not enforced, but `owners` /
+  `owners_team` still decide team `maintainer` roles, so keep them accurate.
+
+### Upgrading from 0.3.x
+
+- Terraform 1.16 or newer is required.
+- The `integrations/github` provider 6.13 or newer is required.
+- No state changes on upgrade.
+- Dropping a user from `users` no longer removes them from the organization.
+  Set `remove_unlisted_members = true` to keep the 0.3.x behaviour.
+
 ## Why orgkit
 
 The well-known community modules for GitHub-as-code are all years-stale. orgkit is a
@@ -97,14 +125,14 @@ upgrading. Breaking input changes so far, since the initial release:
 
 | Name | Version |
 | ---- | ------- |
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9 |
-| <a name="requirement_github"></a> [github](#requirement\_github) | ~> 6.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.16 |
+| <a name="requirement_github"></a> [github](#requirement\_github) | ~> 6.13 |
 
 ## Providers
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_github"></a> [github](#provider\_github) | ~> 6.0 |
+| <a name="provider_github"></a> [github](#provider\_github) | ~> 6.13 |
 
 ## Modules
 
@@ -133,17 +161,18 @@ upgrading. Breaking input changes so far, since the initial release:
 | <a name="input_organization_variables"></a> [organization\_variables](#input\_organization\_variables) | Org-level shared Actions variables (plaintext value + visibility). | <pre>map(object({<br/>    value        = string<br/>    visibility   = optional(string, "private")<br/>    repositories = optional(list(string), [])<br/>  }))</pre> | `{}` | no |
 | <a name="input_owners"></a> [owners](#input\_owners) | Explicit set of owner usernames (mapped to GitHub's `admin` role). Ignored when `owners_team` is set. | `set(string)` | `[]` | no |
 | <a name="input_owners_team"></a> [owners\_team](#input\_owners\_team) | Convenience: derive organization owners from the members of this team, by<br/>name. `null` (default) means use the explicit `owners` set instead. There is<br/>no hardcoded owners team — the consumer chooses. | `string` | `null` | no |
-| <a name="input_repositories"></a> [repositories](#input\_repositories) | Repositories and which teams may access them. See the repository submodule for the full object schema and validations. | <pre>list(object({<br/>    name        = string<br/>    description = string<br/>    visibility  = optional(string, "private")<br/>    readers     = optional(list(string), [])<br/>    writers     = optional(list(string), [])<br/>    admins      = optional(list(string), [])<br/>    restricted  = optional(bool, false)<br/><br/>    topics             = optional(list(string), [])<br/>    homepage_url       = optional(string, null)<br/>    has_issues         = optional(bool, true)<br/>    has_wiki           = optional(bool, false)<br/>    has_projects       = optional(bool, false)<br/>    has_downloads      = optional(bool, false)<br/>    is_template        = optional(bool, false)<br/>    gitignore_template = optional(string, null)<br/>    license_template   = optional(string, null)<br/>    archived           = optional(bool, false)<br/>    archive_on_destroy = optional(bool, true)<br/>    default_branch     = optional(string, null)<br/>    enable_pages       = optional(bool, false)<br/>    signed_commits     = optional(bool, true)<br/><br/>    allow_merge_commit     = optional(bool, false)<br/>    allow_squash_merge     = optional(bool, true)<br/>    allow_rebase_merge     = optional(bool, false)<br/>    allow_auto_merge       = optional(bool, true)<br/>    delete_branch_on_merge = optional(bool, true)<br/>    merge_commit_message   = optional(string, "PR_BODY")<br/>    merge_commit_title     = optional(string, "PR_TITLE")<br/><br/>    template = optional(object({<br/>      owner                = string<br/>      repository           = string<br/>      include_all_branches = optional(bool, false)<br/>    }))<br/><br/>    rulesets = optional(map(object({<br/>      enforcement  = optional(string, "active")<br/>      target       = optional(string, "branch")<br/>      include_refs = optional(list(string), ["~ALL"])<br/>      exclude_refs = optional(list(string), [])<br/>      bypass_actors = optional(list(object({<br/>        actor_type  = string<br/>        actor_id    = optional(number, 0)<br/>        team        = optional(string)<br/>        bypass_mode = optional(string, "always")<br/>      })), [])<br/>      rules = object({<br/>        creation                = optional(bool, false)<br/>        update                  = optional(bool, false)<br/>        deletion                = optional(bool, false)<br/>        non_fast_forward        = optional(bool, false)<br/>        required_signatures     = optional(bool, false)<br/>        required_linear_history = optional(bool, false)<br/>        pull_request = optional(object({<br/>          required_approving_review_count   = optional(number, 0)<br/>          require_code_owner_review         = optional(bool, false)<br/>          require_last_push_approval        = optional(bool, false)<br/>          dismiss_stale_reviews_on_push     = optional(bool, false)<br/>          required_review_thread_resolution = optional(bool, false)<br/>        }))<br/>      })<br/>    })), {})<br/><br/>    variables = optional(map(string), {})<br/>    environments = optional(map(object({<br/>      variables  = optional(map(string), {})<br/>      reviewers  = optional(list(string), [])<br/>      wait_timer = optional(number, 0)<br/>      deployment_branch_policy = optional(object({<br/>        protected_branches     = optional(bool, false)<br/>        custom_branch_policies = optional(list(string), [])<br/>      }))<br/>    })), {})<br/>  }))</pre> | `[]` | no |
+| <a name="input_remove_unlisted_members"></a> [remove\_unlisted\_members](#input\_remove\_unlisted\_members) | Remove a user from the organization when they are dropped from `users` (default: they stay, and Terraform stops tracking them). One-way: turning it off again, or emptying `users`, removes every managed member. | `bool` | `false` | no |
+| <a name="input_repositories"></a> [repositories](#input\_repositories) | Repositories and which teams may access them. See the repository submodule for the full object schema and validations. | <pre>list(object({<br/>    name        = string<br/>    description = string<br/>    visibility  = optional(string, "private")<br/>    readers     = optional(list(string), [])<br/>    writers     = optional(list(string), [])<br/>    admins      = optional(list(string), [])<br/>    restricted  = optional(bool, false)<br/><br/>    topics             = optional(list(string), [])<br/>    homepage_url       = optional(string, null)<br/>    has_issues         = optional(bool, true)<br/>    has_wiki           = optional(bool, false)<br/>    has_projects       = optional(bool, false)<br/>    has_downloads      = optional(bool, false) # ignored: deprecated by the provider<br/>    is_template        = optional(bool, false)<br/>    gitignore_template = optional(string, null)<br/>    license_template   = optional(string, null)<br/>    archived           = optional(bool, false)<br/>    archive_on_destroy = optional(bool, true)<br/>    default_branch     = optional(string, null)<br/>    enable_pages       = optional(bool, false)<br/>    signed_commits     = optional(bool, true)<br/><br/>    allow_merge_commit     = optional(bool, false)<br/>    allow_squash_merge     = optional(bool, true)<br/>    allow_rebase_merge     = optional(bool, false)<br/>    allow_auto_merge       = optional(bool, true)<br/>    delete_branch_on_merge = optional(bool, true)<br/>    merge_commit_message   = optional(string, "PR_BODY")<br/>    merge_commit_title     = optional(string, "PR_TITLE")<br/><br/>    template = optional(object({<br/>      owner                = string<br/>      repository           = string<br/>      include_all_branches = optional(bool, false)<br/>    }))<br/><br/>    rulesets = optional(map(object({<br/>      enforcement  = optional(string, "active")<br/>      target       = optional(string, "branch")<br/>      include_refs = optional(list(string), ["~ALL"])<br/>      exclude_refs = optional(list(string), [])<br/>      bypass_actors = optional(list(object({<br/>        actor_type  = string<br/>        actor_id    = optional(number, 0)<br/>        team        = optional(string)<br/>        bypass_mode = optional(string, "always")<br/>      })), [])<br/>      rules = object({<br/>        creation                = optional(bool, false)<br/>        update                  = optional(bool, false)<br/>        deletion                = optional(bool, false)<br/>        non_fast_forward        = optional(bool, false)<br/>        required_signatures     = optional(bool, false)<br/>        required_linear_history = optional(bool, false)<br/>        pull_request = optional(object({<br/>          required_approving_review_count   = optional(number, 0)<br/>          require_code_owner_review         = optional(bool, false)<br/>          require_last_push_approval        = optional(bool, false)<br/>          dismiss_stale_reviews_on_push     = optional(bool, false)<br/>          required_review_thread_resolution = optional(bool, false)<br/>        }))<br/>      })<br/>    })), {})<br/><br/>    variables = optional(map(string), {})<br/>    environments = optional(map(object({<br/>      variables  = optional(map(string), {})<br/>      reviewers  = optional(list(string), [])<br/>      wait_timer = optional(number, 0)<br/>      deployment_branch_policy = optional(object({<br/>        protected_branches     = optional(bool, false)<br/>        custom_branch_policies = optional(list(string), [])<br/>      }))<br/>    })), {})<br/>  }))</pre> | `[]` | no |
 | <a name="input_secrets"></a> [secrets](#input\_secrets) | Decrypted secret values keyed by scope. Supplied already-decrypted by the caller; this module never performs decryption. | <pre>object({<br/>    org = optional(map(string), {})<br/>    repos = optional(map(object({<br/>      actions      = optional(map(string), {})<br/>      environments = optional(map(map(string)), {})<br/>    })), {})<br/>  })</pre> | <pre>{<br/>  "org": {},<br/>  "repos": {}<br/>}</pre> | no |
 | <a name="input_teams"></a> [teams](#input\_teams) | Teams and their membership. A team may hold predefined organization-level<br/>GitHub roles via `org_roles`. Repository access is granted per repository via<br/>readers/writers/admins, not through org roles. | <pre>list(object({<br/>    name        = string<br/>    description = string<br/>    members     = optional(list(string), [])<br/>    org_roles   = optional(list(string), [])<br/>  }))</pre> | `[]` | no |
-| <a name="input_users"></a> [users](#input\_users) | Organization members. `fullname`/`email` are informational; membership is keyed on `username`. | <pre>list(object({<br/>    username = string<br/>    fullname = optional(string, "")<br/>    email    = optional(string, "")<br/>  }))</pre> | `[]` | no |
+| <a name="input_users"></a> [users](#input\_users) | Organization members, keyed on `username` (`fullname`/`email` are informational). Leave empty to not manage organization membership; the member set then comes from `teams[].members`. | <pre>list(object({<br/>    username = string<br/>    fullname = optional(string, "")<br/>    email    = optional(string, "")<br/>  }))</pre> | `[]` | no |
 
 ## Outputs
 
 | Name | Description |
 | ---- | ----------- |
 | <a name="output_all_members_team_id"></a> [all\_members\_team\_id](#output\_all\_members\_team\_id) | ID of the all-members team, or null when create\_all\_members\_team = false. |
-| <a name="output_members"></a> [members](#output\_members) | Map of organization member username => managed membership username. |
+| <a name="output_members"></a> [members](#output\_members) | Map of member username => username: `users`, or every team member when `users` is empty. |
 | <a name="output_repository_ids"></a> [repository\_ids](#output\_repository\_ids) | Map of repository name => numeric repo\_id. |
 | <a name="output_teams"></a> [teams](#output\_teams) | Map of team name => { id, slug }. |
 <!-- END_TF_DOCS -->
