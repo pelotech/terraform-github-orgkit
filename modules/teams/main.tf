@@ -35,7 +35,7 @@ locals {
 resource "github_team_members" "internal" {
   for_each = local.people
 
-  team_id = github_team.internal[each.key].id
+  team_slug = github_team.internal[each.key].slug
 
   dynamic "members" {
     for_each = each.value
@@ -65,7 +65,7 @@ resource "github_team" "everyone" {
 resource "github_team_members" "everyone" {
   count = var.create_all_members_team && length(var.members) > 0 ? 1 : 0
 
-  team_id = github_team.everyone[0].id
+  team_slug = github_team.everyone[0].slug
 
   dynamic "members" {
     for_each = var.members
