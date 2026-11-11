@@ -14,14 +14,8 @@ variable "owners" {
   default     = []
 }
 
-variable "manage_membership" {
-  description = "Manage organization membership for `members`. When `false`, no `github_membership` resources are created and the `members` output passes the usernames through unchanged. Turning it off removes nobody from the organization unless `remove_unlisted_members` has been applied as `true`, in which case every managed member is removed."
-  type        = bool
-  default     = true
-}
-
 variable "remove_unlisted_members" {
-  description = "Remove a user from the organization when they are dropped from `members`. When `false` (default), a dropped user is forgotten by Terraform and stays in the organization. One-way: once applied as `true`, setting it back to `false` (or setting `manage_membership = false`) removes every managed member from the organization."
+  description = "Remove a user from the organization when they are dropped from `members`. When `false` (default), a dropped user is forgotten by Terraform and stays in the organization. One-way: once applied as `true`, setting it back to `false` (or emptying `members`) removes every managed member from the organization."
   type        = bool
   default     = false
 }

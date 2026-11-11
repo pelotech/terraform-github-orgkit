@@ -1,5 +1,5 @@
 #
-# Organization membership (optional — var.manage_membership). Owners map to
+# Organization membership for var.members (none when it is empty). Owners map to
 # GitHub's `admin` role; everyone else is a plain `member`. Which usernames are
 # owners is entirely the caller's choice (var.owners) — this module bakes in no
 # owners-team convention.
@@ -7,17 +7,17 @@
 # Two mutually exclusive resources, because `lifecycle.destroy` must be a literal:
 #
 # - `internal` (default): an instance that leaves the configuration — a user
-#   dropped from var.members, or membership management switched off — is
-#   forgotten by Terraform, never destroyed, so nobody is removed from the
-#   organization. This is what makes unmanaging safe at any time.
+#   dropped from var.members, or var.members emptied altogether — is forgotten
+#   by Terraform, never destroyed, so nobody is removed from the organization.
+#   This is what makes it safe to stop managing membership at any time.
 # - `removable` (var.remove_unlisted_members): a normal resource; a dropped user
 #   really is removed from the organization. One-way — leaving this mode
 #   destroys its instances.
 #
 
 locals {
-  retained_members  = var.manage_membership && !var.remove_unlisted_members ? var.members : toset([])
-  removable_members = var.manage_membership && var.remove_unlisted_members ? var.members : toset([])
+  retained_members  = var.remove_unlisted_members ? toset([]) : var.members
+  removable_members = var.remove_unlisted_members ? var.members : toset([])
 }
 
 resource "github_membership" "internal" {

@@ -41,7 +41,7 @@ cycles):
 modules/organization ──▶ modules/teams ──▶ modules/repository
 ```
 
-- **`modules/organization`** — org membership (optional via `manage_membership`;
+- **`modules/organization`** — org membership (none when `users` is empty;
   removal opt-in via `remove_unlisted_members`), owner/admin assignment, org rulesets
   (baseline + signed commits). Outputs the membership map.
 - **`modules/teams`** — teams, team memberships, the optional all-members team, and

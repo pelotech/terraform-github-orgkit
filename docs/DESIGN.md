@@ -43,9 +43,9 @@ modules/organization  →  modules/teams  →  modules/repository
 - **`organization`** — org membership (owners mapped to `admin`, everyone else
   `member`). Three modes: retained by default (a dropped user is forgotten, not
   removed), removal opt-in via `remove_unlisted_members`, or not managed at all
-  via `manage_membership = false`. Also generic organization rulesets: a
-  `organization_rulesets` map merged with curated, opt-in `enabled_presets` (PR reviews, deletion/force-push
-  protection, signed commits, linear history). Outputs the membership map.
+  when `users` is empty. Also generic organization rulesets: a
+  `organization_rulesets` map merged with curated, opt-in `enabled_presets` (PR
+  reviews, deletion/force-push protection, signed commits, linear history). Outputs the membership map.
 - **`teams`** — teams, team memberships, the optional all-members team, and org-role
   assignments (resolved by name against the org's predefined roles). Consumes the
   membership map + owner set (the member set is the union of team members when

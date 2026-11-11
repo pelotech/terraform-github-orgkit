@@ -123,20 +123,3 @@ run "removal_opt_in_uses_removable" {
     error_message = "The members output must list every member in removal mode."
   }
 }
-
-run "unmanaged_creates_no_membership" {
-  command = plan
-  variables {
-    manage_membership       = false
-    remove_unlisted_members = true
-    members                 = ["alice", "bob"]
-  }
-  assert {
-    condition     = length(github_membership.internal) + length(github_membership.removable) == 0
-    error_message = "manage_membership = false must create no github_membership resources."
-  }
-  assert {
-    condition     = output.members == { alice = "alice", bob = "bob" }
-    error_message = "The members output must still list every member when membership is unmanaged."
-  }
-}

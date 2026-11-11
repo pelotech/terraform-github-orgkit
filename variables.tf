@@ -1,5 +1,14 @@
 variable "users" {
-  description = "Organization members. `fullname`/`email` are informational; membership is keyed on `username`. Ignored when manage_membership = false."
+  description = <<-EOT
+    Organization members. `fullname`/`email` are informational; membership is
+    keyed on `username`. Leave empty to not manage organization membership at
+    all: no `github_membership` resources are created, team members are not
+    checked against this list, and the member set (used for the all-members team)
+    is the union of `teams[].members`. Emptying it later removes nobody from the
+    organization unless `remove_unlisted_members` has been applied as `true`, but
+    users who are on no team leave the all-members team and lose its default read
+    access.
+  EOT
   type = list(object({
     username = string
     fullname = optional(string, "")
@@ -8,29 +17,13 @@ variable "users" {
   default = []
 }
 
-variable "manage_membership" {
-  description = <<-EOT
-    Manage organization membership (`github_membership`) from `users`. When
-    `false`, orgkit creates no membership resources, `users` is ignored, and the
-    member set (used for the all-members team) is the union of `teams[].members`.
-    Adding someone to a team still invites them to the organization, but the owner
-    (`admin`) role is no longer enforced. Turning it off never removes anyone
-    from the organization unless `remove_unlisted_members` has been applied as
-    `true`, but users who are on no team leave the all-members team and lose its
-    default read access.
-  EOT
-  type        = bool
-  default     = true
-}
-
 variable "remove_unlisted_members" {
   description = <<-EOT
     Remove a user from the organization when they are dropped from `users`. When
     `false` (default), a dropped user loses their team memberships but stays in
     the organization, and Terraform simply stops tracking them. One-way: once
-    applied as `true`, setting it back to `false` or setting
-    `manage_membership = false` removes every managed member from the
-    organization.
+    applied as `true`, setting it back to `false` or emptying `users` removes
+    every managed member from the organization.
   EOT
   type        = bool
   default     = false
@@ -72,7 +65,7 @@ variable "teams" {
   default = []
 
   validation {
-    condition = !var.manage_membership || alltrue([
+    condition = length(var.users) == 0 || alltrue([
       for t in var.teams :
       alltrue([for p in t.members : contains(var.users[*].username, p)])
     ])

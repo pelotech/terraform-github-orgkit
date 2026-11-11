@@ -34,34 +34,36 @@ module "repos" {
 
 ### Organization membership modes
 
-| Setting | Dropping a user from `users` | Turning membership management off later |
+| Setting | Dropping a user from `users` | Emptying `users` later |
 |---|---|---|
-| default | Loses team memberships, stays in the organization | Nobody is removed from the organization; users on no team leave the all-members team |
-| `remove_unlisted_members = true` | Removed from the organization | **Removes every managed member** |
-| `manage_membership = false` | n/a — `users` is ignored | n/a |
+| `users` listed (default) | Loses team memberships, stays in the organization | Nobody is removed from the organization; users on no team leave the all-members team |
+| `users` listed, `remove_unlisted_members = true` | Removed from the organization | **Removes every managed member** |
+| `users` empty | n/a — membership is not managed | n/a |
 
 `remove_unlisted_members` is one-way. Turning it on is safe at any time (the
 plan shows one create per member, which re-asserts the existing membership).
 It only removes users dropped *after* it has been applied: a user dropped
 earlier, or in the same apply that turns it on, stays in the organization.
-Turning it off again, or setting `manage_membership = false` while it is on,
-destroys the memberships and removes those people from the organization. To
-back out, first remove
-`module.<name>.module.organization.github_membership.removable` from state.
+Turning it off again, or emptying `users` while it is on, destroys the
+memberships and removes those people from the organization. To back out, first
+remove `module.<name>.module.organization.github_membership.removable` from
+state.
 
-With `manage_membership = false`, teams, team membership and the all-members
-team keep working and `users` can be dropped; the member set is the union of
-`teams[].members`.
+Leave `users` empty to not manage organization membership at all. Teams, team
+membership and the all-members team keep working; the member set is the union
+of `teams[].members`.
 
-- Anyone in `users` who is on no team leaves the all-members team when you
-  switch, and loses the default read access it grants. If no team has any
+- It is all or nothing: as soon as `users` lists anyone, every team member must
+  be listed too.
+- Anyone who was in `users` but is on no team leaves the all-members team when
+  you empty it, and loses the default read access it grants. If no team has any
   members, the all-members team is left empty.
 - Adding someone to a team still invites them to the organization.
 - The owner (`admin`) role is no longer enforced. Keep `owners` / `owners_team`
   matching the real organization owners: they still decide who is a team
   `maintainer`, and a mismatch shows up as perpetual team-role drift.
-- Team members are no longer checked against `users` at plan time, so a
-  misspelled username fails at apply instead.
+- Team members are not checked against `users` at plan time, so a misspelled
+  username fails at apply instead.
 
 ### Upgrading from 0.3.x
 
@@ -167,24 +169,23 @@ upgrading. Breaking input changes so far, since the initial release:
 | <a name="input_all_members_team_name"></a> [all\_members\_team\_name](#input\_all\_members\_team\_name) | Name of the all-members team. | `string` | `"everyone"` | no |
 | <a name="input_create_all_members_team"></a> [create\_all\_members\_team](#input\_create\_all\_members\_team) | Create an all-members team that grants default read access to non-restricted repositories. | `bool` | `true` | no |
 | <a name="input_enabled_presets"></a> [enabled\_presets](#input\_enabled\_presets) | Names of built-in ruleset presets to enable. See modules/organization/main.tf local.presets. | `list(string)` | <pre>[<br/>  "require_pull_request_reviews",<br/>  "restrict_deletions",<br/>  "require_signed_commits"<br/>]</pre> | no |
-| <a name="input_manage_membership"></a> [manage\_membership](#input\_manage\_membership) | Manage organization membership (`github_membership`) from `users`. When<br/>`false`, orgkit creates no membership resources, `users` is ignored, and the<br/>member set (used for the all-members team) is the union of `teams[].members`.<br/>Adding someone to a team still invites them to the organization, but the owner<br/>(`admin`) role is no longer enforced. Turning it off never removes anyone<br/>from the organization unless `remove_unlisted_members` has been applied as<br/>`true`, but users who are on no team leave the all-members team and lose its<br/>default read access. | `bool` | `true` | no |
 | <a name="input_organization_rulesets"></a> [organization\_rulesets](#input\_organization\_rulesets) | Organization rulesets, keyed by name. Merged with (and overridden by name by)<br/>the presets selected via enabled\_presets. bypass\_actors uses raw numeric<br/>actor\_id (OrganizationAdmin needs none); team-name bypass is per-repo only. | <pre>map(object({<br/>    enforcement          = optional(string, "active")<br/>    target               = optional(string, "branch")<br/>    include_refs         = optional(list(string), ["~ALL"])<br/>    exclude_refs         = optional(list(string), [])<br/>    include_repositories = optional(list(string), ["~ALL"])<br/>    exclude_repositories = optional(list(string), [])<br/>    bypass_actors = optional(list(object({<br/>      actor_type  = string<br/>      actor_id    = optional(number, 0)<br/>      bypass_mode = optional(string, "always")<br/>    })), [])<br/>    rules = object({<br/>      creation                = optional(bool, false)<br/>      update                  = optional(bool, false)<br/>      deletion                = optional(bool, false)<br/>      non_fast_forward        = optional(bool, false)<br/>      required_signatures     = optional(bool, false)<br/>      required_linear_history = optional(bool, false)<br/>      pull_request = optional(object({<br/>        required_approving_review_count   = optional(number, 0)<br/>        require_code_owner_review         = optional(bool, false)<br/>        require_last_push_approval        = optional(bool, false)<br/>        dismiss_stale_reviews_on_push     = optional(bool, false)<br/>        required_review_thread_resolution = optional(bool, false)<br/>      }))<br/>    })<br/>  }))</pre> | `{}` | no |
 | <a name="input_organization_secrets"></a> [organization\_secrets](#input\_organization\_secrets) | Visibility config for org-level shared secrets. Values come from var.secrets.org. | <pre>map(object({<br/>    visibility   = optional(string, "private")<br/>    repositories = optional(list(string), [])<br/>  }))</pre> | `{}` | no |
 | <a name="input_organization_variables"></a> [organization\_variables](#input\_organization\_variables) | Org-level shared Actions variables (plaintext value + visibility). | <pre>map(object({<br/>    value        = string<br/>    visibility   = optional(string, "private")<br/>    repositories = optional(list(string), [])<br/>  }))</pre> | `{}` | no |
 | <a name="input_owners"></a> [owners](#input\_owners) | Explicit set of owner usernames (mapped to GitHub's `admin` role). Ignored when `owners_team` is set. | `set(string)` | `[]` | no |
 | <a name="input_owners_team"></a> [owners\_team](#input\_owners\_team) | Convenience: derive organization owners from the members of this team, by<br/>name. `null` (default) means use the explicit `owners` set instead. There is<br/>no hardcoded owners team — the consumer chooses. | `string` | `null` | no |
-| <a name="input_remove_unlisted_members"></a> [remove\_unlisted\_members](#input\_remove\_unlisted\_members) | Remove a user from the organization when they are dropped from `users`. When<br/>`false` (default), a dropped user loses their team memberships but stays in<br/>the organization, and Terraform simply stops tracking them. One-way: once<br/>applied as `true`, setting it back to `false` or setting<br/>`manage_membership = false` removes every managed member from the<br/>organization. | `bool` | `false` | no |
+| <a name="input_remove_unlisted_members"></a> [remove\_unlisted\_members](#input\_remove\_unlisted\_members) | Remove a user from the organization when they are dropped from `users`. When<br/>`false` (default), a dropped user loses their team memberships but stays in<br/>the organization, and Terraform simply stops tracking them. One-way: once<br/>applied as `true`, setting it back to `false` or emptying `users` removes<br/>every managed member from the organization. | `bool` | `false` | no |
 | <a name="input_repositories"></a> [repositories](#input\_repositories) | Repositories and which teams may access them. See the repository submodule for the full object schema and validations. | <pre>list(object({<br/>    name        = string<br/>    description = string<br/>    visibility  = optional(string, "private")<br/>    readers     = optional(list(string), [])<br/>    writers     = optional(list(string), [])<br/>    admins      = optional(list(string), [])<br/>    restricted  = optional(bool, false)<br/><br/>    topics             = optional(list(string), [])<br/>    homepage_url       = optional(string, null)<br/>    has_issues         = optional(bool, true)<br/>    has_wiki           = optional(bool, false)<br/>    has_projects       = optional(bool, false)<br/>    has_downloads      = optional(bool, false) # accepted but ignored: deprecated and unused by the provider<br/>    is_template        = optional(bool, false)<br/>    gitignore_template = optional(string, null)<br/>    license_template   = optional(string, null)<br/>    archived           = optional(bool, false)<br/>    archive_on_destroy = optional(bool, true)<br/>    default_branch     = optional(string, null)<br/>    enable_pages       = optional(bool, false)<br/>    signed_commits     = optional(bool, true)<br/><br/>    allow_merge_commit     = optional(bool, false)<br/>    allow_squash_merge     = optional(bool, true)<br/>    allow_rebase_merge     = optional(bool, false)<br/>    allow_auto_merge       = optional(bool, true)<br/>    delete_branch_on_merge = optional(bool, true)<br/>    merge_commit_message   = optional(string, "PR_BODY")<br/>    merge_commit_title     = optional(string, "PR_TITLE")<br/><br/>    template = optional(object({<br/>      owner                = string<br/>      repository           = string<br/>      include_all_branches = optional(bool, false)<br/>    }))<br/><br/>    rulesets = optional(map(object({<br/>      enforcement  = optional(string, "active")<br/>      target       = optional(string, "branch")<br/>      include_refs = optional(list(string), ["~ALL"])<br/>      exclude_refs = optional(list(string), [])<br/>      bypass_actors = optional(list(object({<br/>        actor_type  = string<br/>        actor_id    = optional(number, 0)<br/>        team        = optional(string)<br/>        bypass_mode = optional(string, "always")<br/>      })), [])<br/>      rules = object({<br/>        creation                = optional(bool, false)<br/>        update                  = optional(bool, false)<br/>        deletion                = optional(bool, false)<br/>        non_fast_forward        = optional(bool, false)<br/>        required_signatures     = optional(bool, false)<br/>        required_linear_history = optional(bool, false)<br/>        pull_request = optional(object({<br/>          required_approving_review_count   = optional(number, 0)<br/>          require_code_owner_review         = optional(bool, false)<br/>          require_last_push_approval        = optional(bool, false)<br/>          dismiss_stale_reviews_on_push     = optional(bool, false)<br/>          required_review_thread_resolution = optional(bool, false)<br/>        }))<br/>      })<br/>    })), {})<br/><br/>    variables = optional(map(string), {})<br/>    environments = optional(map(object({<br/>      variables  = optional(map(string), {})<br/>      reviewers  = optional(list(string), [])<br/>      wait_timer = optional(number, 0)<br/>      deployment_branch_policy = optional(object({<br/>        protected_branches     = optional(bool, false)<br/>        custom_branch_policies = optional(list(string), [])<br/>      }))<br/>    })), {})<br/>  }))</pre> | `[]` | no |
 | <a name="input_secrets"></a> [secrets](#input\_secrets) | Decrypted secret values keyed by scope. Supplied already-decrypted by the caller; this module never performs decryption. | <pre>object({<br/>    org = optional(map(string), {})<br/>    repos = optional(map(object({<br/>      actions      = optional(map(string), {})<br/>      environments = optional(map(map(string)), {})<br/>    })), {})<br/>  })</pre> | <pre>{<br/>  "org": {},<br/>  "repos": {}<br/>}</pre> | no |
 | <a name="input_teams"></a> [teams](#input\_teams) | Teams and their membership. A team may hold predefined organization-level<br/>GitHub roles via `org_roles`. Repository access is granted per repository via<br/>readers/writers/admins, not through org roles. | <pre>list(object({<br/>    name        = string<br/>    description = string<br/>    members     = optional(list(string), [])<br/>    org_roles   = optional(list(string), [])<br/>  }))</pre> | `[]` | no |
-| <a name="input_users"></a> [users](#input\_users) | Organization members. `fullname`/`email` are informational; membership is keyed on `username`. Ignored when manage\_membership = false. | <pre>list(object({<br/>    username = string<br/>    fullname = optional(string, "")<br/>    email    = optional(string, "")<br/>  }))</pre> | `[]` | no |
+| <a name="input_users"></a> [users](#input\_users) | Organization members. `fullname`/`email` are informational; membership is<br/>keyed on `username`. Leave empty to not manage organization membership at<br/>all: no `github_membership` resources are created, team members are not<br/>checked against this list, and the member set (used for the all-members team)<br/>is the union of `teams[].members`. Emptying it later removes nobody from the<br/>organization unless `remove_unlisted_members` has been applied as `true`, but<br/>users who are on no team leave the all-members team and lose its default read<br/>access. | <pre>list(object({<br/>    username = string<br/>    fullname = optional(string, "")<br/>    email    = optional(string, "")<br/>  }))</pre> | `[]` | no |
 
 ## Outputs
 
 | Name | Description |
 | ---- | ----------- |
 | <a name="output_all_members_team_id"></a> [all\_members\_team\_id](#output\_all\_members\_team\_id) | ID of the all-members team, or null when create\_all\_members\_team = false. |
-| <a name="output_members"></a> [members](#output\_members) | Map of organization member username => username. The member set is `users` when membership is managed, and the union of team members when manage\_membership = false. |
+| <a name="output_members"></a> [members](#output\_members) | Map of organization member username => username. The member set is `users`, or the union of team members when `users` is empty (membership not managed). |
 | <a name="output_repository_ids"></a> [repository\_ids](#output\_repository\_ids) | Map of repository name => numeric repo\_id. |
 | <a name="output_teams"></a> [teams](#output\_teams) | Map of team name => { id, slug }. |
 <!-- END_TF_DOCS -->

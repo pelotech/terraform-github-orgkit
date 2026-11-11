@@ -7,9 +7,14 @@
 #
 
 locals {
-  # The member set: `users` when membership is managed, otherwise the union of
-  # every team's members (so `users` can be dropped entirely).
-  usernames = var.manage_membership ? toset(var.users[*].username) : toset(flatten(var.teams[*].members))
+  # Organization membership is managed for exactly the users listed in `users`.
+  # With no `users`, nothing is managed and the member set (which feeds the
+  # all-members team) is the union of every team's members instead.
+  managed_usernames = toset(var.users[*].username)
+  manage_membership = length(local.managed_usernames) > 0
+  members = local.manage_membership ? tomap(module.organization.members) : tomap({
+    for u in toset(flatten(var.teams[*].members)) : u => u
+  })
 
   # Owners are either explicit (var.owners) or derived from a named team's members
   # (var.owners_team). No owners team is hardcoded.
@@ -24,9 +29,8 @@ locals {
 module "organization" {
   source = "./modules/organization"
 
-  members                              = local.usernames
+  members                              = local.managed_usernames
   owners                               = local.owners
-  manage_membership                    = var.manage_membership
   remove_unlisted_members              = var.remove_unlisted_members
   organization_rulesets                = var.organization_rulesets
   enabled_presets                      = var.enabled_presets
@@ -38,7 +42,7 @@ module "teams" {
 
   teams                   = var.teams
   owners                  = local.owners
-  members                 = module.organization.members
+  members                 = local.members
   create_all_members_team = var.create_all_members_team
   all_members_team_name   = var.all_members_team_name
 }
