@@ -19,7 +19,7 @@ Consumes the membership map and owner set from the organization module; outputs 
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_github"></a> [github](#provider\_github) | 6.13.0 |
+| <a name="provider_github"></a> [github](#provider\_github) | ~> 6.0 |
 
 ## Modules
 
