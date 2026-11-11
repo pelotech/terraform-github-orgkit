@@ -15,7 +15,7 @@ variable "owners" {
 }
 
 variable "manage_membership" {
-  description = "Manage organization membership for `members`. When `false`, no `github_membership` resources are created and the `members` output passes the usernames through unchanged."
+  description = "Manage organization membership for `members`. When `false`, no `github_membership` resources are created and the `members` output passes the usernames through unchanged. Turning it off removes nobody from the organization unless `remove_unlisted_members` has been applied as `true`, in which case every managed member is removed."
   type        = bool
   default     = true
 }

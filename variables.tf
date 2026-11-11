@@ -14,8 +14,10 @@ variable "manage_membership" {
     `false`, orgkit creates no membership resources, `users` is ignored, and the
     member set (used for the all-members team) is the union of `teams[].members`.
     Adding someone to a team still invites them to the organization, but the owner
-    (`admin`) role is no longer enforced. Safe to turn off at any time unless
-    `remove_unlisted_members` has been applied as `true`.
+    (`admin`) role is no longer enforced. Turning it off never removes anyone
+    from the organization unless `remove_unlisted_members` has been applied as
+    `true`, but users who are on no team leave the all-members team and lose its
+    default read access.
   EOT
   type        = bool
   default     = true

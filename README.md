@@ -36,12 +36,14 @@ module "repos" {
 
 | Setting | Dropping a user from `users` | Turning membership management off later |
 |---|---|---|
-| default | Loses team memberships, stays in the organization | Safe — Terraform stops tracking, nobody is removed |
+| default | Loses team memberships, stays in the organization | Nobody is removed from the organization; users on no team leave the all-members team |
 | `remove_unlisted_members = true` | Removed from the organization | **Removes every managed member** |
 | `manage_membership = false` | n/a — `users` is ignored | n/a |
 
 `remove_unlisted_members` is one-way. Turning it on is safe at any time (the
 plan shows one create per member, which re-asserts the existing membership).
+It only removes users dropped *after* it has been applied: a user dropped
+earlier, or in the same apply that turns it on, stays in the organization.
 Turning it off again, or setting `manage_membership = false` while it is on,
 destroys the memberships and removes those people from the organization. To
 back out, first remove
@@ -51,6 +53,9 @@ With `manage_membership = false`, teams, team membership and the all-members
 team keep working and `users` can be dropped; the member set is the union of
 `teams[].members`.
 
+- Anyone in `users` who is on no team leaves the all-members team when you
+  switch, and loses the default read access it grants. If no team has any
+  members, the all-members team is left empty.
 - Adding someone to a team still invites them to the organization.
 - The owner (`admin`) role is no longer enforced. Keep `owners` / `owners_team`
   matching the real organization owners: they still decide who is a team
@@ -161,7 +166,7 @@ upgrading. Breaking input changes so far, since the initial release:
 | <a name="input_all_members_team_name"></a> [all\_members\_team\_name](#input\_all\_members\_team\_name) | Name of the all-members team. | `string` | `"everyone"` | no |
 | <a name="input_create_all_members_team"></a> [create\_all\_members\_team](#input\_create\_all\_members\_team) | Create an all-members team that grants default read access to non-restricted repositories. | `bool` | `true` | no |
 | <a name="input_enabled_presets"></a> [enabled\_presets](#input\_enabled\_presets) | Names of built-in ruleset presets to enable. See modules/organization/main.tf local.presets. | `list(string)` | <pre>[<br/>  "require_pull_request_reviews",<br/>  "restrict_deletions",<br/>  "require_signed_commits"<br/>]</pre> | no |
-| <a name="input_manage_membership"></a> [manage\_membership](#input\_manage\_membership) | Manage organization membership (`github_membership`) from `users`. When<br/>`false`, orgkit creates no membership resources, `users` is ignored, and the<br/>member set (used for the all-members team) is the union of `teams[].members`.<br/>Adding someone to a team still invites them to the organization, but the owner<br/>(`admin`) role is no longer enforced. Safe to turn off at any time unless<br/>`remove_unlisted_members` has been applied as `true`. | `bool` | `true` | no |
+| <a name="input_manage_membership"></a> [manage\_membership](#input\_manage\_membership) | Manage organization membership (`github_membership`) from `users`. When<br/>`false`, orgkit creates no membership resources, `users` is ignored, and the<br/>member set (used for the all-members team) is the union of `teams[].members`.<br/>Adding someone to a team still invites them to the organization, but the owner<br/>(`admin`) role is no longer enforced. Turning it off never removes anyone<br/>from the organization unless `remove_unlisted_members` has been applied as<br/>`true`, but users who are on no team leave the all-members team and lose its<br/>default read access. | `bool` | `true` | no |
 | <a name="input_organization_rulesets"></a> [organization\_rulesets](#input\_organization\_rulesets) | Organization rulesets, keyed by name. Merged with (and overridden by name by)<br/>the presets selected via enabled\_presets. bypass\_actors uses raw numeric<br/>actor\_id (OrganizationAdmin needs none); team-name bypass is per-repo only. | <pre>map(object({<br/>    enforcement          = optional(string, "active")<br/>    target               = optional(string, "branch")<br/>    include_refs         = optional(list(string), ["~ALL"])<br/>    exclude_refs         = optional(list(string), [])<br/>    include_repositories = optional(list(string), ["~ALL"])<br/>    exclude_repositories = optional(list(string), [])<br/>    bypass_actors = optional(list(object({<br/>      actor_type  = string<br/>      actor_id    = optional(number, 0)<br/>      bypass_mode = optional(string, "always")<br/>    })), [])<br/>    rules = object({<br/>      creation                = optional(bool, false)<br/>      update                  = optional(bool, false)<br/>      deletion                = optional(bool, false)<br/>      non_fast_forward        = optional(bool, false)<br/>      required_signatures     = optional(bool, false)<br/>      required_linear_history = optional(bool, false)<br/>      pull_request = optional(object({<br/>        required_approving_review_count   = optional(number, 0)<br/>        require_code_owner_review         = optional(bool, false)<br/>        require_last_push_approval        = optional(bool, false)<br/>        dismiss_stale_reviews_on_push     = optional(bool, false)<br/>        required_review_thread_resolution = optional(bool, false)<br/>      }))<br/>    })<br/>  }))</pre> | `{}` | no |
 | <a name="input_organization_secrets"></a> [organization\_secrets](#input\_organization\_secrets) | Visibility config for org-level shared secrets. Values come from var.secrets.org. | <pre>map(object({<br/>    visibility   = optional(string, "private")<br/>    repositories = optional(list(string), [])<br/>  }))</pre> | `{}` | no |
 | <a name="input_organization_variables"></a> [organization\_variables](#input\_organization\_variables) | Org-level shared Actions variables (plaintext value + visibility). | <pre>map(object({<br/>    value        = string<br/>    visibility   = optional(string, "private")<br/>    repositories = optional(list(string), [])<br/>  }))</pre> | `{}` | no |
